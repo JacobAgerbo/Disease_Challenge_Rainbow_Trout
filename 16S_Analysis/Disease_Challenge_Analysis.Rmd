@@ -1,0 +1,1317 @@
+---
+title: "Disease Challenge Analysis for CTRL samples"
+author: "Jacob Agerbo Rasmussen"
+date: "4/15/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Set dependencies
+```{r load dependecies, warning=FALSE, tidy=TRUE, message=FALSE}
+library(ggplot2)
+library(RColorBrewer)
+library(ggpubr)
+library(rstatix)
+library(cowplot)
+library(animalcules)
+library(vegan)
+library(reshape2)
+library(knitr)
+library(phyloseq)
+library(SummarizedExperiment)
+library(tibble)
+library(plotROC)
+library(MASS)
+library(caret)
+library(wesanderson)
+library(decontam)
+library(hilldiv)
+library(metacoder);packageVersion("metacoder")
+```
+
+```{r load data, echo=FALSE}
+MAE = readRDS(file = "Disease_Challenge_Samples_filtered.rds")
+Summary <- read.table("summary_reads_table.txt", sep = "\t")
+ASVs <- read.csv("ASV_table_glom.csv", row.names = 1)
+tax <- read.csv("tax_table_glom.csv", row.names = 1)
+md <- read.csv("metadata.csv")
+rownames(md) <- md$Sample_ID
+physeq <- phyloseq(otu_table(ASVs,taxa_are_rows=TRUE),
+               tax_table(as.matrix(tax)),
+               sample_data(md))
+```
+
+# DADA2 Summary
+## Reads output from DADA2 
+Overview of filtering of low quality reads, merging with overlap, and chimeric removal
+```{r DADA2 summary, warning=FALSE, echo=FALSE, tidy=TRUE}
+Summary$Removed <- c(100-Summary$final_perc_reads_retained)
+Summary$Sample <- rownames(Summary)
+Summary_data <- melt(Summary[,c(7,9)])
+sum.bar.plot <- ggplot() + geom_bar(aes(y = value, x = Sample, fill = variable), data = Summary_data,
+                           stat="identity") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  ylab("Percent Retained Reads") + xlab("Samples") 
+
+Summary_box_data  <- as.data.frame(rownames(Summary))
+Summary_box_data$Raw_reads <- c(Summary$dada2_input/Summary$dada2_input)
+Summary_box_data$Filtered <- c(Summary$filtered/Summary$dada2_input)
+Summary_box_data$Merged <- c(Summary$merged/Summary$dada2_input)
+Summary_box_data$No_Chimera <- c(Summary$nonchim/Summary$dada2_input)
+
+
+Summary_box_data <- melt(Summary_box_data)
+sum.box.plot <- ggplot(Summary_box_data, aes(x=variable, y=value)) + 
+  geom_boxplot() + ylab("Percent Retained Reads") + xlab("DADA2 Step") + theme_minimal()
+```
+
+Filtering were rather mild on data, removing around 10-15% of the data across all samples
+```{r DADA2 summary stacked plot, warning=FALSE, echo=FALSE, tidy=TRUE}
+sum.bar.plot
+```
+The filtering steps didn't seeems to remove reads differential. 
+```{r DADA2 summary box, warning=FALSE}
+#pdf("DADA2_process.pdf")
+sum.box.plot
+#dev.off()
+```
+## Sequencing Saturation
+```{r Rarefraction data, warning=FALSE, echo=FALSE, tidy=TRUE}
+ASVs <- t(ASVs)
+S <- specnumber(ASVs) # observed number of species
+(raremax <- min(rowSums(ASVs)))
+Srare <- rarefy(ASVs, raremax)
+```
+Filtering of data with DADA2 this doesn't seems to have inflected the final ASV saturation and sequencing depth per sample seems to saturated.
+```{r Rarefraction curves,echo=FALSE}
+#pdf("Rarefraction.pdf", width = 9, height = 6)
+plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+rarecurve(ASVs, step = 500, col = "black", cex = 0.6, label = FALSE)
+#dev.off()
+```
+
+# Data Overivew
+Lets have an overview of sample distribution across dataset. Each feeding type have the sample amount of samples, except Beta, which is one sample short.
+```{r Pie chart - Samples across Locations,echo=FALSE}
+pie.plot <- filter_summary_pie_box(MAE,
+                            samples_discard = c(""),
+                            filter_type = "By Metadata",
+                            sample_condition = "Feeding_Type")
+pie.plot
+```
+
+## Removal of Blank samples, Water samples, and feed samples
+We remove Blank samples, water samples and feed samples for analysis of the intestinal samples.
+Furthermore, we focus on each feeding type individually, starting with CTRL.
+```{r Remove blanks and mock, echo=FALSE}
+MAE.sample <- MAE[, MAE@ExperimentList@listData[["MicrobeGenetics"]]@colData@listData[["Sample_Type"]] == "Sample", ]
+#MAE.CTRL_PRO <- MAE.sample[, MAE.sample@ExperimentList@listData[["MicrobeGenetics"]]@colData@listData[["Feeding_Type"]] != "Beta", ]
+MAE.CTRL <- MAE.sample[, MAE.sample@ExperimentList@listData[["MicrobeGenetics"]]@colData@listData[["Feeding_Type"]] == "CTRL", ]
+MAE.PRO <- MAE.sample[, MAE.sample@ExperimentList@listData[["MicrobeGenetics"]]@colData@listData[["Feeding_Type"]] == "PRO", ]
+```
+
+\newpage
+# Species Distribution and Richness Analysis
+Lets have an overview of phyla distribution between infected and non infected fish across different feeding types 
+
+## Species distribution of all taxa between feeding type and infection 
+### Fish reared on CTRL feed
+Here we clearly see:
+* Mycoplasma is heavily dominating non infected fish reared on control feed.
+* Massilia, endosymbiont8, and Pseudomonas were introduced in infected fish reared on control feed.
+* Mycoplasma is still present in infected samples, but with high variance between individuals
+
+### Fish reared on PRO feed
+Here we clearly see:
+* Mycoplasma is no longer dominating non infected fish reared on PRO feed - this is most likely an effect of the feed,
+  which has been covered in previous investigation (Rasmussen et al 2021b)
+* Massilia, endosymbiont8 were introduced in both non infected fish reared on control feed.
+* Pseudomonas seems to more related to the infection than feed it self
+* Mycoplasma is still present in infected samples, but with high variance between individuals
+* Change of diet seems very similar to infection parameters
+
+```{r Phyla Barplot in CTRL, warning=FALSE, echo=FALSE, tidy=TRUE}
+bar.plot <- relabu_barplot(MAE.sample,
+                    tax_level="Genus",
+                    sort_by="conditions",
+                    sample_conditions=c("Feeding_Type","Infected","Gut_Type"),
+                    show_legend=TRUE)
+bar.plot
+```
+
+## Species distribution in CTRL 
+Boxplots clearly confirms trends for fish reared on CTRL, as seen in the barplot.
+```{r Genus across location, warning=FALSE, echo=FALSE, tidy=TRUE, message=FALSE}
+Genus.plot <- relabu_boxplot(MAE.CTRL,
+                    tax_level="Genus",
+                    organisms=c("Mycoplasma", "Pseudomonas", "Massilia", "endosymbionts8"),
+                    condition=c("Infected"),
+                    datatype="relative abundance")
+```
+```{r Genus per location, warning=FALSE, echo=FALSE, tidy=TRUE}
+Genus.plot
+```
+\newpage
+
+## Alpha Diversity
+A higher richness was found in infected samples, when reared on CTRL feed
+```{r Genus Aplha Diversity, warning=FALSE, echo=FALSE, tidy=TRUE}
+a.plot <- alpha_div_boxplot(MAE = MAE.CTRL,
+                  tax_level = "Genus",
+                  condition = "Infected",
+                  alpha_metric = "inverse_simpson")
+
+a.test <- do_alpha_div_test(MAE = MAE.CTRL,
+                  tax_level = "Genus",
+                  condition = "Infected",
+                  alpha_metric = "inverse_simpson",
+                  alpha_stat = "T-test")
+
+```
+```{R Genus Aplha Diversity plotting, warning=FALSE, echo=FALSE, tidy=TRUE}
+a.plot
+```
+\newpage
+# Bacterial Composition
+
+## Ordination Analysis, using PCoA, of both PRO and CTRL
+In brief, we see a clear differentiation in composition between both feeding types and infection, confirming barplot.
+
+• Non infected fish, reared on CTRL, are clustering alone, indecating high effect of both feed type and infection
+• Non infected fish, reared on CTRL, have a very low variation between individuals (domination of Mycoplasma) 
+• Clusters of individuals reared on PRO, indicate that infection have some impact on microbiota
+
+• Infected fish, reared on CTRL clusters together with both infected and non infected fish, reared on PRO.
+```{r PCoA PRO and CTRL, warning=FALSE, echo=FALSE, tidy=TRUE}
+pcoa <- dimred_pcoa(MAE.CTRL_PRO,
+                      tax_level="Genus",
+                      color="Feeding_Type",
+                      shape="Infected", 
+                      axx=1,
+                      axy=2,
+                      axz=3,
+                    method="bray")
+```
+```{r PCoA plot PRO and CTRL, warning=FALSE, echo=FALSE, tidy=TRUE}
+pcoa$plot
+```
+\newpage
+# Differential Abundance Analysis between infected and non-infected fish, reared on CTRL
+• Differential analysis confirms Mycoplasma being differential abundaant between infection stages (no biggie). Further, we see Mycoplasma being present in all samplse (except one), indicating that MYcoplasma really is native to all individuals.
+
+Furthermore, we see other microbes also being significantly affected by infection, including Defluviimonas, Psychrobacter, and Weissella.
+
+```{r CTRL Differential Abundance, warning=FALSE, echo=FALSE, tidy=TRUE, message=FALSE}
+p <- differential_abundance(MAE.CTRL,
+                            tax_level="Genus",
+                            input_da_condition=c("Infected"),
+                            min_num_filter = 2,
+                            input_da_padj_cutoff = 0.05)
+```
+```{r CTRL Differential Abundance Results, warning=FALSE, echo=FALSE, tidy=TRUE}
+knitr::kable(p)
+#write.csv(p, "CTRL_infection_Diff_table.csv")
+```
+
+# Differential Abundance Analysis between infected and non-infected fish, reared on PRO
+Also in individuals, reared on PRO, we see a difference in specific microbes.
+
+* Endosymbiont8 seems to be related to non-infected individuals reared on PRO
+```{r PRO Differential Abundance, warning=FALSE, echo=FALSE, tidy=TRUE, message=FALSE}
+p <- differential_abundance(MAE.PRO,
+                            tax_level="Genus",
+                            input_da_condition=c("Infected"),
+                            min_num_filter = 2,
+                            input_da_padj_cutoff = 0.05)
+```
+```{r PRO Differential Abundance Results, warning=FALSE, echo=FALSE, tidy=TRUE}
+knitr::kable(p)
+write.csv(p, "PRO_infection_Diff_table.csv")
+```
+\newpage
+# Biomarker Analysis of specific microbes for infection, reared on CTRL
+
+Biomarker analysis reveals Mycoplsama to be a potential biomarker for infection, at least for CTRL reared individuals.
+* Analysis revealed a high importance of Mycoplasm and Pseudomonas, consequently. 
+* AUC for logistic regression were conseqeuntly above 0.9, indicating a reliable prediction. 
+
+```{r Biomarker prediction between infected and non infected samples in CTRL}
+microbe <- MAE.CTRL[["MicrobeGenetics"]]  #double bracket subsetting is easier
+tax_table <- as.data.frame(rowData(microbe))  # organism x taxlev
+sam_table <- as.data.frame(colData(microbe))  # sample x condition
+counts_table <- 
+    as.data.frame(assays(microbe))[, rownames(sam_table)]  # organism x sample
+    ## shiny UI input object
+    # Sum counts by taxon level and return log10 cpm
+logcpm_table <- counts_table %>% 
+      upsample_counts(tax_table, "Genus") %>% 
+      counts_to_logcpm() %>% 
+      base::t() %>% base::as.data.frame()
+    # add target variable
+logcpm_table[, "y"] <- 
+    sam_table %>% dplyr::pull("Infected")
+    # set up classification model prameters
+fitControl <- caret::trainControl(method = "repeatedcv", 
+          number = 3, 
+          repeats = 99, 
+          classProbs = TRUE, 
+          summaryFunction = twoClassSummary, 
+          sampling = "smote", 
+          savePredictions = TRUE)
+#  
+model_fit_glm <- 
+        caret::train(y ~ ., data = logcpm_table, method = "glmnet", 
+            tuneLength = 5, trControl = fitControl, metric = "ROC")
+
+model_fit_rf <- 
+        caret::train(y ~ ., data = logcpm_table, method = "ranger", 
+        trControl = fitControl, tuneLength = 5, 
+        metric = "ROC", importance = "impurity")
+
+#ggplot(model_fit_glm) + theme_bw()
+#ggplot(model_fit_gbm) + theme_bw()
+#ggplot(model_fit_svm) + theme_bw()
+#ggplot(model_fit_rf) + theme_bw()
+
+## Pick a disired % to investigate
+percent_top_biomarker = 0.1
+# GLMs
+importance_df_glm <- caret::varImp(model_fit_glm)$importance %>% 
+            base::as.data.frame() %>% 
+            rownames_to_column() %>% 
+            dplyr::rename(importance = Overall) %>% 
+            dplyr::rename(biomarker = rowname) %>% 
+            dplyr::arrange(importance) %>% 
+            dplyr::filter(importance > 
+                    quantile(importance, 1 - percent_top_biomarker)) %>% 
+            dplyr::mutate(biomarker = forcats::fct_inorder(biomarker))
+importance_df_glm$biomarker <- paste("GLM", importance_df_glm$biomarker)
+importance_df_glm$Type <- rep("Generalised Linear Model", length(rownames(importance_df_glm)))
+
+# RF
+importance_df_rf <- caret::varImp(model_fit_rf)$importance %>% 
+            base::as.data.frame() %>% 
+            rownames_to_column() %>% 
+            dplyr::rename(importance = Overall) %>% 
+            dplyr::rename(biomarker = rowname) %>% 
+            dplyr::arrange(importance) %>% 
+            dplyr::filter(importance > 
+                    quantile(importance, 1 - percent_top_biomarker)) %>% 
+            dplyr::mutate(biomarker = forcats::fct_inorder(biomarker))
+importance_df_rf$biomarker <- paste("RF", importance_df_rf$biomarker)
+importance_df_rf$Type <- rep("Random Forrest", length(rownames(importance_df_rf)))
+#
+importance_df <- rbind(importance_df_glm,importance_df_rf)
+write.csv(importance_df, file = "biomarkers_importance_CTRL.csv")
+#
+CTRL.importance_plot <- ggplot2::ggplot() + 
+            geom_col(data = importance_df, aes(x = reorder(biomarker, importance), y = importance, colour = Type, fill = Type)) + 
+            coord_flip() + theme_minimal() + xlab("Top 5% Biomarkers") + ylab("Biomarker Importance") + 
+            scale_fill_manual(values = wes_palette("Darjeeling1", n =2)) + 
+            scale_color_manual(values = wes_palette("Darjeeling1", n =2))
+
+prob_pred <- as.numeric(model_fit_rf$pred$obs)
+prob_pred[prob_pred == 1] <- 0
+prob_pred[prob_pred == 2] <- 1
+#
+df_roc_rf <- data.frame(m = model_fit_rf$pred[, 
+        which(colnames(model_fit_rf$pred) == levels(model_fit_rf$pred$obs)[2])], 
+        d = prob_pred, stringsAsFactors = FALSE)
+#
+df_roc_rf$Type <- rep("Random Forrest", length(df_roc_rf))
+#
+prob_pred <- as.numeric(model_fit_glm$pred$obs)
+prob_pred[prob_pred == 1] <- 0
+prob_pred[prob_pred == 2] <- 1
+#
+df_roc_glm <- data.frame(m = model_fit_glm$pred[, 
+        which(colnames(model_fit_glm$pred) == levels(model_fit_glm$pred$obs)[2])], 
+        d = prob_pred, stringsAsFactors = FALSE)
+#
+df_roc_glm$Type <- rep("GLMnet", length(df_roc_glm))
+#
+df_roc <- rbind(df_roc_glm,df_roc_rf)
+#
+g <- ggplot(df_roc, aes(m = m, d = d, colour = Type)) + 
+    geom_roc(n.cuts = 0) + coord_equal() + 
+    style_roc() + scale_fill_manual(values = wes_palette("Darjeeling1", n =2)) + scale_color_manual(values = wes_palette("Darjeeling1", n =2))
+#
+CTRL.roc_plot <- g + annotate("text", x = 0.75, y = 0.35, 
+            label = paste("AUC - GLM =", round((calc_auc(g))$AUC[1], 
+        4))) + annotate("text", x = 0.75, y = 0.25, 
+            label = paste("AUC - RF =", round((calc_auc(g))$AUC[2], 
+        4)))
+
+```
+```{r}
+#pdf("Biomarker_glm_rf_CTRL.pdf", width = 12, height = 4)
+cowplot::plot_grid(CTRL.importance_plot, CTRL.roc_plot, labels = "AUTO")
+#dev.off()
+```
+```{r borrow Decontam code for prevalence test - couldnt install decontam, warning=FALSE, include=FALSE, tidy=TRUE}
+#' Identify contaminant sequences.
+#'
+#' The frequency of each sequence (or OTU) in the input feature table as a function of the concentration of
+#' amplified DNA in each sample is used to identify contaminant sequences.
+#'
+#' @param seqtab (Required). \code{Integer matrix} or \code{phyloseq} object.
+#' A feature table recording the observed abundances of each sequence variant (or OTU) in each sample.
+#' Rows should correspond to samples, and columns to sequences (or OTUs).
+#' If a phyloseq object is provided, the otu-table component will be extracted.
+#'
+#' @param conc (Optional). \code{numeric}. Required if performing frequency-based testing.
+#' A quantitative measure of the concentration of amplified DNA in each sample prior to sequencing.
+#' All values must be greater than zero. Zero is assumed to represent the complete absence of DNA.
+#' If \code{seqtab} was prodivded as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#' @param neg (Optional). \code{logical}. Required if performing prevalence-based testing.
+#' TRUE if sample is a negative control, and FALSE if not (NA entries are not included in the testing).
+#' Extraction controls give the best results.
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#' @param method (Optional). \code{character}. The method used to test for contaminants.
+#' \describe{
+#'   \item{auto}{(Default). frequency, prevalence or combined will be automatically selected based on whether
+#'               just \code{conc}, just \code{neg}, or both were provided.}
+#'   \item{frequency}{Contaminants are identified by frequency that varies inversely with sample DNA concentration.}
+#'   \item{prevalence}{Contaminants are identified by increased prevalence in negative controls.}
+#'   \item{combined}{The frequency and prevalence probabilities are combined with Fisher's method and used to identify contaminants.}
+#'   \item{minimum}{The minimum of the frequency and prevalence probabilities is used to identify contaminants.}
+#'   \item{either}{Contaminants are called if identified by either the frequency or prevalance methods.}
+#'   \item{both}{Contaminants are called if identified by both the frequency and prevalance methods.}
+#' }
+#'
+#' @param batch (Optional). \code{factor}, or any type coercible to a \code{factor}. Default NULL.
+#' If provided, should be a vector of length equal to the number of input samples which specifies which batch
+#' each sample belongs to (eg. sequencing run). Contaminants identification will be performed independently
+#' within each batch.
+#' If \code{seqtab} was provided as a phyloseq object, the name of the appropriate sample-variable in that
+#' phyloseq object can be provided.
+#'
+#' @param batch.combine (Optional). Default "minimum".
+#' For each input sequence variant (or OTU) the probabilities calculated in each batch are combined into a
+#' single probability that is compared to `code{threshold}` to classify contaminants.
+#' Valid values: "minimum", "product", "fisher".
+#'
+#' @param threshold (Optional). Default \code{0.1}.
+#' The probability threshold below which (strictly less than) the null-hypothesis (not a contaminant) should be rejected in favor of the
+#' alternate hypothesis (contaminant). A length-two vector can be provided when using the \code{either} or \code{both} methods:
+#' the first value is the threshold for the frequency test and the second for the prevalence test.
+#'
+#' @param normalize (Optional). Default TRUE.
+#' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
+#' If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).
+#'
+#' @param detailed (Optional). Default TRUE.
+#' If TRUE, the return value is a \code{data.frame} containing diagnostic information on the contaminant decision.
+#' If FALSE, the return value is a \code{logical} vector containing the binary contaminant classifications.
+#'
+#' @param ... Not used currently
+#'
+#' @return
+#' If \code{detailed=TRUE} a \code{data.frame} with classification information.
+#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating contaminants.
+#'
+#' @importFrom methods as
+#' @importFrom methods is
+#' @importFrom stats pchisq
+#'
+#' @name isContaminant
+#'
+#' @examples
+#' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+#' # conc should be positive and non-zero
+#' conc <- c(6413, 3581.0, 5375, 4107, 4291, 4260, 4171, 2765, 33, 48)
+#' neg <- c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE)
+#' # Use frequency or frequency and prevalence to identify contaminants
+#' isContaminant(st, conc=conc, method="frequency", threshold=0.2)
+#' isContaminant(st, conc=conc, neg=neg, method="both", threshold=c(0.1,0.5))
+#'
+NULL
+
+#' @rdname isContaminant
+#' @export
+setGeneric("isContaminant", signature = c("seqtab"),
+           function(seqtab, ...)
+             standardGeneric("isContaminant"))
+
+#' @rdname isContaminant
+#' @export
+setMethod("isContaminant", signature = c(seqtab = "ANY"),
+  function(seqtab,
+           conc = NULL,
+           neg = NULL,
+           method = c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
+           batch = NULL,
+           batch.combine = c("minimum", "product", "fisher"),
+           threshold = 0.1,
+           normalize = TRUE,
+           detailed = TRUE){
+    if(is(seqtab, "phyloseq")) {
+      ps <- seqtab
+      seqtab <- as(ps@otu_table, "matrix")
+      if(ps@otu_table@taxa_are_rows) { seqtab <- t(seqtab) }
+      if(is.character(conc) && length(conc)==1) { conc <- getFromPS(ps, conc) }
+      if(is.character(neg) && length(neg)==1) { neg <- getFromPS(ps, neg) }
+      if(is.character(batch) && length(batch)==1) { batch <- getFromPS(ps, batch) }
+      isContaminant(seqtab,
+                    conc = conc,
+                    neg = neg,
+                    method = method,
+                    batch = batch,
+                    batch.combine = batch.combine,
+                    threshold = threshold,
+                    normalize = normalize,
+                    detailed = detailed)
+    }
+    .is_contaminant(seqtab,
+                    conc = conc,
+                    neg = neg,
+                    method = method,
+                    batch = batch,
+                    batch.combine = batch.combine,
+                    threshold = threshold,
+                    normalize = normalize,
+                    detailed = detailed)
+  }
+)
+
+.is_contaminant <- function(seqtab,
+                            conc = NULL,
+                            neg = NULL,
+                            method = c("auto", "frequency", "prevalence", "combined", "minimum", "either", "both"),
+                            batch = NULL,
+                            batch.combine = c("minimum", "product", "fisher"),
+                            threshold = 0.1,
+                            normalize = TRUE,
+                            detailed = TRUE){
+  # Validate input
+  if(!(is(seqtab, "matrix") && is.numeric(seqtab))) stop("seqtab must be a numeric matrix.")
+  if(any(rowSums(seqtab) == 0)) { # Catch and remove zero-count samples
+    zero.count <- rowSums(seqtab) == 0
+    seqtab <- seqtab[!zero.count,]
+    if(!is.null(conc)) conc <- conc[!zero.count]
+    if(!is.null(neg)) neg <- neg[!zero.count]
+    if(!is.null(batch)) batch <- batch[!zero.count]
+    warning("Removed ", sum(zero.count), " samples with zero total counts (or frequency).")
+  }
+  if(normalize) seqtab <- sweep(seqtab, 1, rowSums(seqtab), "/")
+  method <- match.arg(method)
+  if(method == "auto") {
+    if(!is.null(conc) && is.null(neg)) method <- "frequency"
+    else if(is.null(conc) && !is.null(neg)) method <- "prevalence"
+    else method <- "combined"
+  }
+  do.freq <- FALSE; do.prev <- FALSE; p.freq <- NA; p.prev <- NA
+  if(method %in% c("frequency", "minimum", "combined", "minimum", "either", "both")) do.freq <- TRUE
+  if(method %in% c("prevalence", "combined", "minimum", "either", "both")) do.prev <- TRUE
+  if(do.prev) {
+    if(is.null(neg)) stop("neg must be provided to perform prevalence-based contaminant identification.")
+  }
+  if(do.freq) {
+    if(is.null(conc)) stop("conc must be provided to perform frequency-based contaminant identification.")
+    if(!(is.numeric(conc) && all(conc>0))) stop("conc must be positive numeric.")
+    if(nrow(seqtab) != length(conc)) stop("The length of conc must match the number of samples (the rows of seqtab).")
+    if(is.null(neg)) neg <- rep(FALSE, length(conc)) # Don't ignore any samples
+  }
+  if(is.numeric(threshold) && all(threshold >= 0) && all(threshold <= 1)) {
+    if(method %in% c("either", "both")) {
+      if(length(threshold) == 1) {
+        message("Using same threshold value for the frequency and prevalence contaminant identification.")
+        threshold <- c(threshold, threshold)
+      }
+    } else if(length(threshold) != 1) {
+      stop("threshold should be a single value.")
+    }
+  } else {
+    stop("threshold must be a numeric value from 0 to 1 (inclusive).")
+  }
+  if(is.null(batch)) {
+    batch <- factor(rep(1, nrow(seqtab)))
+  }
+  if(nrow(seqtab) != length(batch)) stop("The length of batch must match the number of samples (the rows of seqtab).")
+  # Check for batches with too few samples
+  tab.batch <- table(batch)
+  if(min(tab.batch) <= 1) stop("Some batches contain zero or one samples.")
+  if(min(tab.batch) <= 4) warning("Some batches have very few (<=4) samples.")
+  batch.combine <- match.arg(batch.combine)
+  batch <- factor(batch)
+  # Loop over batches
+  p.freqs <- matrix(NA, nrow=nlevels(batch), ncol=ncol(seqtab))
+  rownames(p.freqs) <- levels(batch)
+  p.prevs <- matrix(NA, nrow=nlevels(batch), ncol=ncol(seqtab))
+  rownames(p.prevs) <- levels(batch)
+  for(bat in levels(batch)) {
+    # Calculate frequency p-value
+    if(do.freq) {
+      p.freqs[bat,] <- apply(seqtab[batch==bat & !neg,], 2, isContaminantFrequency, conc=conc[batch==bat & !neg])
+    }
+    # Calculate prevalence p-value
+    if(do.prev) {
+      p.prevs[bat,] <- apply(seqtab[batch==bat,], 2, isContaminantPrevalence, neg=neg[batch==bat])
+    }
+  }
+  # Combine batch p-values
+  if(batch.combine == "minimum") {
+    if(do.freq) {
+      suppressWarnings(p.freq <- apply(p.freqs, 2, min, na.rm=TRUE))
+      p.freq[is.infinite(p.freq)] <- NA # If NA in all batches, min sets to infinite
+    }
+    if(do.prev) {
+      suppressWarnings(p.prev <- apply(p.prevs, 2, min, na.rm=TRUE))
+      p.prev[is.infinite(p.prev)] <- NA # If NA in all batches, min sets to infinite
+    }
+  } else if(batch.combine == "product") {
+    if(do.freq) {
+      suppressWarnings(p.freq <- apply(p.freqs, 2, prod, na.rm=TRUE))
+    }
+    if(do.prev) {
+      suppressWarnings(p.prev <- apply(p.prevs, 2, prod, na.rm=TRUE))
+    }
+  } else if(batch.combine == "fisher") {
+    if(do.freq) {
+      p.freq <- apply(p.freqs, 2, fish.combine, na.replace=0.5)
+    }
+    if(do.prev) {
+      p.prev <- apply(p.prevs, 2, fish.combine, na.replace=0.5)
+    }
+  } else {
+    stop("Invalid batch.combine value.")
+  }
+  # Calculate overall p-value
+  if(method=="frequency") { pval <- p.freq }
+  else if(method=="prevalence") { pval <- p.prev }
+  else if(method=="minimum") { pval <- pmin(p.freq, p.prev) }
+  else if(method=="combined") { pval <- pchisq(-2*log(p.freq * p.prev), df=4, lower.tail=FALSE) }
+  else if(method %in% c("either", "both")) { pval <- rep(NA, length(p.freq)) }
+  else { stop("Invalid method specified.") }
+
+  if(method=="either") { # Two tests
+    isC <- (p.freq < threshold[[1]]) | (p.prev < threshold[[2]])
+  } else if(method =="both") {
+    isC <- (p.freq < threshold[[1]]) & (p.prev < threshold[[2]])
+  } else { # One test
+    isC <- (pval < threshold)
+  }
+  isC[is.na(isC)] <- FALSE # NA pvals are not called contaminants
+  # Make return value
+  if(detailed) {
+    rval <- data.frame(freq=apply(seqtab,2,mean), prev=apply(seqtab>0,2,sum), p.freq=p.freq, p.prev=p.prev, p=pval, contaminant=isC)
+  } else {
+    rval <- isC
+  }
+  return(rval)
+}
+
+
+#' @importFrom stats lm
+#' @importFrom stats pf
+#'
+#' @keywords internal
+isContaminantFrequency <- function(freq, conc) {
+  df <- data.frame(logc=log(conc), logf=log(freq))
+  df <- df[!is.na(freq) & freq>0,]
+  if(nrow(df)>1) {
+    lm1 <- lm(logf~offset(-1*logc), data=df)
+    SS1 <- sum(lm1$residuals^2)
+    lm0 <- lm(logf~1, data=df)
+    SS0 <- sum(lm0$residuals^2)
+    dof <- sum(freq>0)-1
+    pval <- pf(SS1/SS0,dof,dof)
+  } else {
+    pval <- NA
+  }
+  return(pval)
+}
+#' @importFrom stats fisher.test
+#' @importFrom stats prop.test
+#'
+#' @keywords internal
+isContaminantPrevalence <- function(freq, neg, method="auto") {
+  fisher.pval <- function(tab, alternative) {
+    excess <- fisher.test(tab, alternative="greater")$p.value + fisher.test(tab, alternative="less")$p.value - 1
+    pval <- fisher.test(tab, alternative=alternative)$p.value
+    pval <- pval - excess/2
+    pval
+  }
+  if(sum(freq>0)>1 && sum(neg,na.rm=TRUE) > 0 && sum(neg,na.rm=TRUE) < sum(!is.na(neg))) {
+    tab <- table(factor(neg, levels=c(TRUE, FALSE)), factor(freq>0, levels=c(TRUE, FALSE)))
+    # First entry (1,1) is the neg prevalence, so alternative is "greater"
+    if((tab[1,2] + tab[2,2]) == 0) { # Present in all samples
+      pval <- 0.5
+    } else if(method == "fisher") {
+      pval <- fisher.pval(tab, alternative="greater")
+    } else if(method == "chisq") {
+      pval <- prop.test(tab, alternative="greater")$p.value
+    } else {
+      pval <- tryCatch(prop.test(tab, alternative="greater")$p.value, warning=function(w) fisher.pval(tab, alternative="greater"))
+    }
+    if(is.na(pval)) {
+      warning("NA probability calculated.")
+    }
+  } else {
+    pval <- NA
+  }
+  return(pval)
+}
+# fisher.test(matrix(c(1,10,40,40), nrow=2), alternative="greater")
+# contingency table, test is whether the first entry is less than expected under fixed marginals
+# so, is there a lower fraction of the first column in row 1 than row 2
+# prop.test(matrix(c(1,10,40,40), nrow=2), alternative="greater")
+# Same test but using chisq approx, which fails at low numbers
+# Warns for low numbers (conditionally use prop.test based on that?)
+# tab <- table(factor(df$neg, levels=c(TRUE, FALSE)), factor(df$present, levels=c(TRUE, FALSE)))
+# tryCatch(prop.test(tab, alternative="less"), warning=function(w) fisher.test(tab, alternative="less"))
+
+#' Identify non-contaminant sequences.
+#'
+#' The prevalence of each sequence (or OTU) in the input feature table across samples and negative controls
+#' is used to identify non-contaminant sequences. Note that the null hypothesis
+#' here is that sequences **are** contaminants. This function is intended for use on low-biomass samples
+#' in which a large proportion of the sequences are likely to be contaminants.
+#'
+#' @param seqtab (Required). Integer matrix.
+#' A feature table recording the observed abundances of each sequence (or OTU) in each sample.
+#' Rows should correspond to samples, and columns to sequences (or OTUs).
+#'
+#' @param neg (Required). \code{logical}
+#' The negative control samples. Extraction controls give the best results.
+#'
+#' @param method (Optional). Default "prevalence".
+#' The method used to test for contaminants. Currently the only method supported is prevalence.
+#' prevalence: Contaminants are identified by increased prevalence in negative controls.
+#'
+#' @param threshold (Optional). Default \code{0.5}.
+#' The probability threshold below which (strictly less than) the null-hypothesis (a contaminant) should be rejected in favor of the
+#' alternate hypothesis (not a contaminant).
+#'
+#' @param normalize (Optional). Default TRUE.
+#' If TRUE, the input \code{seqtab} is normalized so that each row sums to 1 (converted to frequency).
+#' If FALSE, no normalization is performed (the data should already be frequencies or counts from equal-depth samples).
+#'
+#' @param detailed (Optional). Default FALSE.
+#' If TRUE, the return value is a \code{data.frame} containing diagnostic information on the non-contaminant decision.
+#' If FALSE, the return value is a \code{logical} vector containing the non-contaminant decisions.
+#'
+#' @param ... Not used currently
+#'
+#' @return
+#' If \code{detailed=FALSE} a \code{logical} vector is returned, with TRUE indicating non-contaminants.
+#' If \code{detailed=TRUE} a \code{data.frame} is returned instead.
+#'
+#' @name isNotContaminant
+#' @export
+#'
+#' @examples
+#' st <- readRDS(system.file("extdata", "st.rds", package="decontam"))
+#' samdf <- readRDS(system.file("extdata", "samdf.rds", package="decontam"))
+#' isNotContaminant(st, samdf$quant_reading, threshold=0.05)
+NULL
+
+#' @rdname isNotContaminant
+#' @export
+setGeneric("isNotContaminant", signature = c("seqtab"),
+           function(seqtab, ...)
+             standardGeneric("isNotContaminant"))
+
+#' @rdname isNotContaminant
+#' @export
+setMethod("isNotContaminant", signature = c(seqtab = "ANY"),
+  function(seqtab,
+           neg = NULL,
+           method = "prevalence",
+           threshold = 0.5,
+           normalize = TRUE,
+           detailed = FALSE){
+    .is_not_contaminant(seqtab,
+                        neg = neg,
+                        method = method,
+                        threshold = threshold,
+                        normalize = normalize,
+                        detailed = detailed)
+  }
+)
+
+.is_not_contaminant <- function(seqtab,
+                                neg = NULL,
+                                method = "prevalence",
+                                threshold = 0.5,
+                                normalize = TRUE,
+                                detailed = FALSE) {
+  if(!method %in% c("prevalence")) stop("isNotContaminant only supports the following methods: prevalence")
+  df <- isContaminant(seqtab, conc=NULL, neg=neg, method=method, threshold=threshold, normalize=normalize, detailed=TRUE)
+  df$p.freq <- 1-df$p.freq
+  df$p.prev <- 1-df$p.prev
+  # Calculate overall p-value
+  if(method=="prevalence") { pval <- df$p.prev }
+  # Make contaminant calls
+  isNotC <- (pval < threshold)
+  isNotC[is.na(isNotC)] <- FALSE # NA pvals are not called not-contaminants
+  df$p <- pval
+  df$contaminant <- NULL
+  df$not.contaminant <- isNotC
+  # Make return value
+  if(detailed) {
+    rval <- df
+  } else {
+    rval <- isNotC
+  }
+  return(rval)
+}
+
+#' @keywords internal
+list_along <- function(nm) {
+  if(!is.character(nm)) stop("list_along requires character input.")
+  rval <- vector("list", length(nm))
+  names(rval) <- nm
+}
+
+#' @keywords internal
+#' @importFrom stats pchisq
+fish.combine <- function(vec, na.replace=NA) {
+  vec[is.na(vec)] <- na.replace
+  vec <- vec[!is.na(vec)]
+  if(any(vec<0 | vec>1)) stop("fish.combine expects values between 0 and 1.")
+  p <- prod(vec)
+  pchisq(-2*log(p), df=2*length(vec), lower.tail=FALSE)
+}
+
+#' @keywords internal
+getFromPS <- function(ps, nm) {
+  i <- match(nm, ps@sam_data@names)
+  if(is.na(i)) stop(paste(nm, "is not a valid sample-variable in the provided phyloseq object."))
+  ps@sam_data@.Data[[i]]
+}
+```
+```{r Prevalence of bacteria between infection stages in CTRL, warning=FALSE, echo=FALSE, tidy=TRUE}
+physeq_CTRL <- subset_samples(physeq, Feeding_Type=="CTRL")
+physeq_PRO <- subset_samples(physeq, Feeding_Type=="PRO")
+ps.pa <- transform_sample_counts(physeq_CTRL, function(abund) 1*(abund>0.001*sum(abund)))
+
+sample_data(ps.pa)$is.neg <- sample_data(ps.pa)$Infected == "Infected"
+infected.prev05 <- isContaminant(ps.pa, method="prevalence", neg="is.neg", threshold=0.05)
+table(infected.prev05$contaminant)
+
+ps.pa.neg <- prune_samples(sample_data(ps.pa)$Infected == "Not.Infected", ps.pa)
+ps.pa.pos <- prune_samples(sample_data(ps.pa)$Infected == "Infected", ps.pa)
+# Make data.frame of prevalence in positive and negative samples
+tax = as.data.frame(ps.pa@tax_table@.Data)
+
+df.pa <- data.frame(pa.pos=taxa_sums(ps.pa.pos), pa.neg=taxa_sums(ps.pa.neg),
+                      Infection=infected.prev05$contaminant, tax = tax$Genus)
+
+
+prevalence_plot <- ggplot(data=df.pa, aes(x=pa.neg, y=pa.pos, color=Infection, label=tax)) +
+  xlab("Prevalence (Not Infected samples)") + ylab("Prevalence (Infected samples)") + geom_text(check_overlap = TRUE) + theme_minimal()
+```
+```{r plotting prevalence}
+#pdf("Biomarker_prevalence_CTRL.pdf", width = 12, height = 12)
+prevalence_plot
+#dev.off()
+```
+
+```{r Biomarker prediction between infected and non infected samples in PRO}
+microbe <- MAE.PRO[["MicrobeGenetics"]]  #double bracket subsetting is easier
+tax_table <- as.data.frame(rowData(microbe))  # organism x taxlev
+sam_table <- as.data.frame(colData(microbe))  # sample x condition
+counts_table <- 
+    as.data.frame(assays(microbe))[, rownames(sam_table)]  # organism x sample
+    ## shiny UI input object
+    # Sum counts by taxon level and return log10 cpm
+logcpm_table <- counts_table %>% 
+      upsample_counts(tax_table, "Genus") %>% 
+      counts_to_logcpm() %>% 
+      base::t() %>% base::as.data.frame()
+    # add target variable
+logcpm_table[, "y"] <- 
+    sam_table %>% dplyr::pull("Infected")
+    # set up classification model prameters
+fitControl <- caret::trainControl(method = "repeatedcv", 
+          number = 3, 
+          repeats = 99, 
+          classProbs = TRUE, 
+          summaryFunction = twoClassSummary, 
+          sampling = "smote", 
+          savePredictions = TRUE)
+#  
+model_fit_glm <- 
+        caret::train(y ~ ., data = logcpm_table, method = "glmnet", 
+            tuneLength = 5, trControl = fitControl, metric = "ROC")
+
+model_fit_rf <- 
+        caret::train(y ~ ., data = logcpm_table, method = "ranger", 
+        trControl = fitControl, tuneLength = 5, 
+        metric = "ROC", importance = "impurity")
+
+#ggplot(model_fit_glm) + theme_bw()
+#ggplot(model_fit_gbm) + theme_bw()
+#ggplot(model_fit_svm) + theme_bw()
+#ggplot(model_fit_rf) + theme_bw()
+
+## Pick a dired % to investigate
+percent_top_biomarker = 0.1
+# GLMs
+importance_df_glm <- caret::varImp(model_fit_glm)$importance %>% 
+            base::as.data.frame() %>% 
+            rownames_to_column() %>% 
+            dplyr::rename(importance = Overall) %>% 
+            dplyr::rename(biomarker = rowname) %>% 
+            dplyr::arrange(importance) %>% 
+            dplyr::filter(importance > 
+                    quantile(importance, 1 - percent_top_biomarker)) %>% 
+            dplyr::mutate(biomarker = forcats::fct_inorder(biomarker))
+importance_df_glm$biomarker <- paste("GLM", importance_df_glm$biomarker)
+importance_df_glm$Type <- rep("Generalised Linear Model", length(rownames(importance_df_glm)))
+
+# RF
+importance_df_rf <- caret::varImp(model_fit_rf)$importance %>% 
+            base::as.data.frame() %>% 
+            rownames_to_column() %>% 
+            dplyr::rename(importance = Overall) %>% 
+            dplyr::rename(biomarker = rowname) %>% 
+            dplyr::arrange(importance) %>% 
+            dplyr::filter(importance > 
+                    quantile(importance, 1 - percent_top_biomarker)) %>% 
+            dplyr::mutate(biomarker = forcats::fct_inorder(biomarker))
+importance_df_rf$biomarker <- paste("RF", importance_df_rf$biomarker)
+importance_df_rf$Type <- rep("Random Forrest", length(rownames(importance_df_rf)))
+#
+importance_df <- rbind(importance_df_glm,importance_df_rf)
+write.csv(importance_df, file = "biomarkers_importance_PRO.csv")
+#
+importance_plot <- ggplot2::ggplot() + 
+            geom_col(data = importance_df, aes(x = reorder(biomarker, importance), y = importance, colour = Type, fill = Type)) + 
+            coord_flip() + theme_minimal() + xlab("Top 5% Biomarkers") + ylab("Biomarker Importance") + 
+            scale_fill_manual(values = wes_palette("Darjeeling1", n =2)) + 
+            scale_color_manual(values = wes_palette("Darjeeling1", n =2))
+
+prob_pred <- as.numeric(model_fit_rf$pred$obs)
+prob_pred[prob_pred == 1] <- 0
+prob_pred[prob_pred == 2] <- 1
+#
+df_roc_rf <- data.frame(m = model_fit_rf$pred[, 
+        which(colnames(model_fit_rf$pred) == levels(model_fit_rf$pred$obs)[2])], 
+        d = prob_pred, stringsAsFactors = FALSE)
+#
+df_roc_rf$Type <- rep("Random Forrest", length(df_roc_rf))
+#
+prob_pred <- as.numeric(model_fit_glm$pred$obs)
+prob_pred[prob_pred == 1] <- 0
+prob_pred[prob_pred == 2] <- 1
+#
+df_roc_glm <- data.frame(m = model_fit_glm$pred[, 
+        which(colnames(model_fit_glm$pred) == levels(model_fit_glm$pred$obs)[2])], 
+        d = prob_pred, stringsAsFactors = FALSE)
+#
+df_roc_glm$Type <- rep("GLMnet", length(df_roc_glm))
+#
+df_roc <- rbind(df_roc_glm,df_roc_rf)
+#
+g <- ggplot(df_roc, aes(m = m, d = d, colour = Type)) + 
+    geom_roc(n.cuts = 0) + coord_equal() + 
+    style_roc() + scale_fill_manual(values = wes_palette("Darjeeling1", n =2)) + scale_color_manual(values = wes_palette("Darjeeling1", n =2))
+#
+roc_plot <- g + annotate("text", x = 0.75, y = 0.35, 
+            label = paste("AUC - GLM =", round((calc_auc(g))$AUC[1], 
+        4))) + annotate("text", x = 0.75, y = 0.25, 
+            label = paste("AUC - RF =", round((calc_auc(g))$AUC[2], 
+        4)))
+
+```
+
+```{r}
+#pdf("Biomarker_glm_rf_PRO.pdf", width = 12, height = 4)
+cowplot::plot_grid(importance_plot, roc_plot, labels = "AUTO")
+#dev.off()
+```
+
+```{r Prevalence of bacteria between infection stages in CTRL, warning=FALSE, echo=FALSE, tidy=TRUE}
+physeq_PRO <- subset_samples(physeq, Feeding_Type=="PRO")
+ps.pa <- transform_sample_counts(physeq_PRO, function(abund) 1*(abund>0.001*sum(abund)))
+
+sample_data(ps.pa)$is.neg <- sample_data(ps.pa)$Infected == "Infected"
+infected.prev05 <- isContaminant(ps.pa, method="prevalence", neg="is.neg", threshold=0.05)
+table(infected.prev05$contaminant)
+
+ps.pa.neg <- prune_samples(sample_data(ps.pa)$Infected == "Not.Infected", ps.pa)
+ps.pa.pos <- prune_samples(sample_data(ps.pa)$Infected == "Infected", ps.pa)
+# Make data.frame of prevalence in positive and negative samples
+tax = as.data.frame(ps.pa@tax_table@.Data)
+
+df.pa <- data.frame(pa.pos=taxa_sums(ps.pa.pos), pa.neg=taxa_sums(ps.pa.neg),
+                      Infection=infected.prev05$contaminant, tax = tax$Genus)
+
+
+prevalence_plot <- ggplot(data=df.pa, aes(x=pa.neg, y=pa.pos, color=Infection, label=tax)) +
+  xlab("Prevalence (Not Infected samples)") + ylab("Prevalence (Infected samples)") + geom_text(check_overlap = TRUE) + theme_minimal()
+```
+```{r plotting prevalence}
+#pdf("Biomarker_prevalence_PRO.pdf", width = 12, height = 12)
+prevalence_plot
+#dev.off()
+```
+
+```{r Physeq tree for Unifrac distances}
+## Create tree for physeq to use unifrac distances for ordination
+library("ape")
+random_tree = rtree(ntaxa(physeq), rooted=TRUE, tip.label=taxa_names(physeq))
+physeq = merge_phyloseq(physeq, random_tree)
+```
+
+```{r filter low occuring ASVs}
+physeq.norm = transform_sample_counts(physeq, function(x) x/sum(x))
+
+#Filtering of low abundant ASVs (ASVs lower than 1% in relative abundance)
+minTotRelAbun = 0.001
+x = taxa_sums(physeq.norm)
+keepTaxa = (x / sum(x)) > minTotRelAbun
+physeq.filtered = prune_taxa(keepTaxa, physeq)
+physeq_samples <- subset_samples(physeq.filtered, Sample_Type=="Sample")
+physeq_samples <- subset_samples(physeq_samples, Feeding_Type!="SYN")
+physeq_samples <- subset_samples(physeq_samples, Gut_Type=="Distal Gut content")
+#ASV <- physeq_samples@otu_table@.Data
+#tax <- physeq_samples@tax_table@.Data
+#write.csv(ASV, "ASV_not_normalised.csv")
+#write.csv(tax, "tax_not_normalised.csv")
+TopNOTUs = names(sort(taxa_sums(physeq_samples), TRUE)[1:10])
+physeq_10 = prune_taxa(TopNOTUs, physeq_samples)
+# how much does top 10 taxa comprise?
+mean(colSums(physeq_10@otu_table@.Data))
+sd(colSums(physeq_10@otu_table@.Data))
+
+
+## Differences of Mycoplasma in CTRL prior and post infection
+physeq_CTRL_inf <- subset_samples(physeq_samples, Feeding_Type=="CTRL")
+physeq_CTRL_inf <- subset_samples(physeq_CTRL_inf, Infected=="Infected")
+mean(physeq_CTRL_inf@otu_table@.Data["ASV_1",])
+sd(physeq_CTRL_inf@otu_table@.Data["ASV_1",])
+physeq_CTRL_no.inf <- subset_samples(physeq_samples, Feeding_Type=="CTRL")
+physeq_CTRL_no.inf <- subset_samples(physeq_CTRL_no.inf, Infected=="Not.Infected")
+mean(physeq_CTRL_no.inf@otu_table@.Data["ASV_1",])
+sd(physeq_CTRL_no.inf@otu_table@.Data["ASV_1",])
+```
+
+We survey the genera of the top 10 most abundant phyla across samples, using relative abundance barplots
+```{r barplot stuff,message=FALSE}
+My_pal <- c("#E6AB02","#D95F02","#7570B3","#1B9E77","#666666")
+
+p_sample = plot_bar(physeq_samples, "Sample_ID", fill = "Family", facet_grid = ~Infected+Feeding_Type) + 
+  geom_bar(aes(color=Family, fill=Family), stat="identity", position="stack") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_brewer(palette="Dark2") +
+  scale_color_brewer(palette="Dark2") +
+  labs(x = "Individuals") +
+  labs(y = "Relative Abundance") +
+  facet_wrap(~ Infected+Feeding_Type, scales="free") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+#pdf("barcharts_16s.pdf", height = 6, width = 9)
+plot_grid(p_sample, nrow = 1)
+#dev.off()
+```
+
+We check the variance between sample types, using PCoA and Unifrac distances. 
+```{r Ordination,message=FALSE}
+GP.ord <- ordinate(physeq_samples, "PCoA", "unifrac", weighted=TRUE)
+p1 = plot_ordination(physeq_samples, GP.ord, type="samples",
+                     color="Infected",
+                     shape = "Feeding_Type" + 
+  scale_fill_brewer(palette="Dark2") +
+  scale_color_brewer(palette="Dark2"))
+p1 = p1 + facet_wrap(~Feeding_Type, 1) + theme_bw()
+
+#pdf("PCoA_16S.pdf", width = 12, height = 3)
+plot_grid(p1, labels = 'AUTO', nrow = 1)
+#dev.off()
+```
+```{r Ordination of genera,message=FALSE}
+GP.ord <- ordinate(physeq_samples, "PCoA", "unifrac")
+p1 = plot_ordination(physeq_samples, GP.ord, type="taxa", color="Phylum", title="taxa") + 
+  scale_fill_brewer(palette="Dark2") +
+  scale_color_brewer(palette="Dark2")
+#pdf("PCoA_Genus.pdf")
+p1+ theme_bw() #+ facet_wrap(~Phylum, 1)
+#dev.off()
+```
+
+
+```{r Richness analysis between infection stages of both CTRL and SYN}
+rich_samples <- subset_samples(physeq, Feeding_Type != "SYN")
+rich_samples <- prune_taxa(taxa_sums(rich_samples) > 0, rich_samples)
+#
+hill_data <- rich_samples@otu_table@.Data
+hill_data <- as.matrix(hill_data)
+hill_md <- as.data.frame(rich_samples@sam_data@.Data)
+colnames(hill_md) <- rich_samples@sam_data@names
+#
+hill_0 <- hill_div(rich_samples@otu_table,0)
+hill_1 <- hill_div(rich_samples@otu_table,1)
+hill_2 <- hill_div(rich_samples@otu_table,2)
+hill_df <- cbind(hill_md,hill_0,hill_1,hill_2)
+####### CTRL ######
+### Plotting
+stat_data <- list()
+palette <- c("#00BFC4", "#F8766D")
+hill_df.CTRL <- hill_df[hill_df$Feeding_Type=="CTRL",]
+stat.test <- hill_df.CTRL %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_0 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[1]] <- stat.test
+
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+    # Create a box plot
+plot0 = ggboxplot(
+      hill_df.CTRL, x = "Infected", y = "hill_0", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 105) 
+plot0 = plot0 + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=0")
+
+### order = 1
+stat.test <- hill_df.CTRL %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_1 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[2]] <- stat.test
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+
+    # Create a box plot
+plot1 = ggboxplot(
+      hill_df.CTRL, x = "Infected", y = "hill_1", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 27.5) 
+plot1 = plot1 + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=1")
+
+###
+stat.test <- hill_df.CTRL %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_2 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[3]] <- stat.test
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+
+    # Create a box plot
+plot2 = ggboxplot(
+      hill_df.CTRL, x = "Infected", y = "hill_2", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 15) 
+plot2 = plot2 + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=2")
+
+####### PRO ######
+### Plotting
+palette <- c("#00BFC4", "#F8766D")
+hill_df.PRO <- hill_df[hill_df$Feeding_Type=="PRO",]
+stat.test <- hill_df.PRO %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_0 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[4]] <- stat.test
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+
+    # Create a box plot
+plot0.PRO = ggboxplot(
+      hill_df.PRO, x = "Infected", y = "hill_0", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 105) 
+plot0.PRO = plot0.PRO + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=0")
+
+### order = 1
+stat.test <- hill_df.PRO %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_0 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[5]] <- stat.test
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+
+    # Create a box plot
+plot1.PRO = ggboxplot(
+      hill_df.PRO, x = "Infected", y = "hill_1", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 27.5) 
+plot1.PRO = plot1.PRO + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=1")
+
+###
+stat.test <- hill_df.PRO %>%
+  group_by("Infected") %>%
+  tukey_hsd(hill_0 ~ Infected) %>%
+  adjust_pvalue(method = "fdr") %>%
+  add_significance("p.adj")
+##
+stat_data[[6]] <- stat.test
+stat.test <- stat.test %>%
+  add_x_position(x = "Infected", dodge = 0.8) %>%
+  add_y_position()
+
+    # Create a box plot
+plot2.PRO = ggboxplot(
+      hill_df.PRO, x = "Infected", y = "hill_2", 
+      color = "black",
+      fill = "Infected", palette = palette,
+      outlier.shape = 8, order = c("Not.Infected", "Infected"),
+      size = 0.5,
+      title = "")  + 
+      stat_pvalue_manual(
+        stat.test,  label = "{p.adj.signif}", tip.length = 0.045,
+        step.increase = 0.09,
+        position = "identity", 
+        y.position = 15) 
+plot2.PRO = plot2.PRO + xlab("Infection") + #changing labels
+  ylab("Effective number of ASVs, q=2")
+
+names(stat_data) <- c("CTRL Hill 0","CTRL Hill 1","CTRL Hill 2","PRO Hill 0","PRO Hill 1","PRO Hill 2")
+#stat_data  <-  as.data.frame(matrix(unlist(stat_data), nrow=length(unlist(stat_data[1]))))
+stat_data <- do.call(rbind, stat_data)
+
+
+```
+
+```{r plot Diversity analysis}
+#write.csv(stat_data, "Hill_Stat_table.csv")
+#pdf("Diversity_analysis.pdf", height = 6, width = 12)
+plot_grid(plot0,plot1, plot2,
+          plot0.PRO,plot1.PRO,plot2.PRO,nrow = 2, labels = "AUTO")
+
+#dev.off()
+```
+
+```{r Metacoder - CTRL Top 20}
+### Create meacoder environment
+TopNOTUs = names(sort(taxa_sums(physeq_CTRL), TRUE)[1:20])
+physeq_20 = prune_taxa(TopNOTUs, physeq_CTRL)
+#substract only samples
+metacoder <- parse_phyloseq(physeq_20)
+metacoder$data$tax_abund <- calc_taxon_abund(metacoder, data = "otu_table")
+metacoder$data$tax_occ <- calc_n_samples(metacoder, "tax_abund", groups = "Infected")
+metacoder$data$diff_table <- compare_groups(metacoder, data = "tax_abund", cols = metacoder$data$sample_data$sample_id,
+                                      groups = metacoder$data$sample_data$Infected)
+metacoder$data$diff_table$adjusted_p_value <- p.adjust(metacoder$data$diff_table$wilcox_p_value,
+                                                 method = "fdr")
+
+# REMOVE COLOURS FOR INSIGNIFICANT ASVs!
+metacoder$data$diff_table$log2_median_ratio[metacoder$data$diff_table$wilcox_p_value > 0.05] <- 0
+
+table(metacoder$data$diff_table$adjusted_p_value < 0.05)
+```
+```{r Plot Heat Trees CTRL}
+#pdf("CTRL_Infection_Metacoder.pdf", width = 12, height = 10)
+set.seed(1) # This makes the plot appear the same each time it is run 
+heat_tree(metacoder, 
+          node_label = taxon_names,
+          node_size = n_obs,
+          node_color = log2_median_ratio, 
+          node_color_range = return(c(rev(viridisLite::mako(5, begin = 0.4,end = 0.9)))),
+          node_color_trans = "linear",
+          node_size_axis_label = "Number of ASVs",
+          node_color_axis_label = "Log2 ratio median proportions",
+          node_color_interval = c(-3, 3),
+          edge_color_interval = c(-3, 3),
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford") # The layout algorithm that initializes node locations
+#dev.off()
+```
+```{r Metacoder - PRO Top 20}
+### Create meacoder environment
+TopNOTUs = names(sort(taxa_sums(physeq_PRO), TRUE)[1:20])
+physeq_20 = prune_taxa(TopNOTUs, physeq_PRO)
+#substract only samples
+metacoder <- parse_phyloseq(physeq_20)
+metacoder$data$tax_abund <- calc_taxon_abund(metacoder, data = "otu_table")
+metacoder$data$tax_occ <- calc_n_samples(metacoder, "tax_abund", groups = "Infected")
+metacoder$data$diff_table <- compare_groups(metacoder, data = "tax_abund", cols = metacoder$data$sample_data$sample_id,
+                                      groups = metacoder$data$sample_data$Infected)
+metacoder$data$diff_table$adjusted_p_value <- p.adjust(metacoder$data$diff_table$wilcox_p_value,
+                                                 method = "fdr")
+
+# REMOVE COLOURS FOR INSIGNIFICANT ASVs!
+metacoder$data$diff_table$log2_median_ratio[metacoder$data$diff_table$wilcox_p_value > 0.05] <- 0
+
+table(metacoder$data$diff_table$adjusted_p_value < 0.05)
+```
+```{r Plot Heat Trees PRO}
+#pdf("PRO_Infection_Metacoder.pdf", width = 12, height = 10)
+set.seed(1) # This makes the plot appear the same each time it is run 
+heat_tree(metacoder, 
+          node_label = taxon_names,
+          node_size = n_obs,
+          node_color = log2_median_ratio, 
+          node_color_range = return(c(rev(viridisLite::mako(5, begin = 0.4,end = 0.9)))),
+          node_color_trans = "linear",
+          node_size_axis_label = "Number of ASVs",
+          node_color_axis_label = "Log2 ratio median proportions",
+          node_color_interval = c(-3, 3),
+          edge_color_interval = c(-3, 3),
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford") # The layout algorithm that initializes node locations
+#dev.off()
+```
