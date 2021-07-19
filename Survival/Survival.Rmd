@@ -1,0 +1,74 @@
+---
+title: "Survival"
+author: "Kasper Rømer Villumsen"
+Comment: "Jacob Agerbo Rasmussen"
+date: "6/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load dependecies, warning=FALSE, tidy=TRUE, message=FALSE}
+library(ggplot2);packageVersion("ggplot2")
+library(RColorBrewer);packageVersion("RColorBrewer")
+library(survival);packageVersion("survival")
+library(survminer);packageVersion("survminer")
+library(knitr);packageVersion("knitr")
+library(wesanderson);packageVersion("wesanderson")
+library(readxl);packageVersion("readxl")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r load data, echo=FALSE}
+GHF_survival_data <- read_excel("Survival.xlsx", 
+    sheet = "HappyGUDP")
+
+#Renaming groups (Epsilon = control, Zeta = probiotic)
+GHF_survival_data$feed<- factor(GHF_survival_data$feed,
+                                     levels = c("1", "2", "5", "6"),
+                                     labels = c("Control - Uninfected", "Probiotic - Uninfected", "Control", "Probiotic"))
+```
+
+```{r}
+#brewer.pal(4, "Dark2")
+group_pal <- c("#000000","#000000", "#1B9E77","#D95F02") 
+surv.object.GHF <- Surv(time = GHF_survival_data$futime, event = GHF_survival_data$event)
+surv.fit.GHF <- survfit(surv.object.GHF ~ feed, data = GHF_survival_data)
+survplot <- ggsurvplot(surv.fit.GHF, 
+           data = GHF_survival_data, 
+           pval = TRUE,
+           pval.method = TRUE, 
+           ncensor.plot = FALSE, 
+           conf.int = TRUE, 
+           linetype = c(1,1,2,2),
+           palette = group_pal,
+           pval.size = 4, 
+           censor = TRUE, 
+
+           ## Add legend
+           legend = "right", 
+           legend.labs = c("Control - Uninfected", "Probiotic - Uninfected", "Control", "Probiotic"),
+           ggtheme = theme_survminer()) 
+#
+#
+fit.all.coxph.GHF <- coxph(surv.object.GHF ~ feed, data = GHF_survival_data)
+forest <- ggforest(fit.all.coxph.GHF, data = GHF_survival_data, noDigits = 2)
+
+
+```
+```{r}
+
+pdf("Yersinia_Infection_survival.pdf", height = 12, width = 16)
+survplot
+dev.off()
+
+#
+#pdf("Hazard_ratio.pdf", height = 12, width = 16)
+#cowplot::plot_grid(forest, labels = 'AUTO', nrow = 1)
+#dev.off()
+```
