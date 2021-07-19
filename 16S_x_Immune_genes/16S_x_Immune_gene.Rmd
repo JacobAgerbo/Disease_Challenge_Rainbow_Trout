@@ -1,0 +1,288 @@
+---
+title: "16S_X_Immune_gene"
+author: "Jacob Agerbo Rasmussen"
+date: "5/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load dependecies, warning=FALSE, tidy=TRUE, message=FALSE}
+library(ggplot2);packageVersion("ggplot2")
+library(RColorBrewer);packageVersion("RColorBrewer")
+library(ggpubr);packageVersion("ggpubr")
+library(cowplot);packageVersion("cowplot")
+library(reshape2);packageVersion("reshape2")
+library(knitr);packageVersion("knitr")
+library(caret);packageVersion("caret")
+library(wesanderson);packageVersion("wesanderson")
+library(readxl);packageVersion("readxl")
+library(boral)
+library(ggboral)
+library(mvabund)
+library(dplyr)
+library(ggrepel)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r generate functions, include=FALSE}
+make_relative = function(abund_matrix) {
+  # Compute relative abundances matrix
+  if (requireNamespace("Matrix", quietly = TRUE) &
+      is(abund_matrix, "sparseMatrix")) {
+
+    sites_abund = Matrix::rowSums(abund_matrix, na.rm = TRUE)
+
+    rel_abund_matrix = abund_matrix / sites_abund
+  } else {
+    # Compute total site abundances
+    sites_abund = rowSums(abund_matrix, na.rm = TRUE)
+
+    # Divide each individual abundace by total site abundance
+    rel_abund_matrix = sweep(abund_matrix, 1, sites_abund, "/")
+  }
+
+  return(rel_abund_matrix)
+}
+# Remake ggplot for gg_coefplot to change facets
+coefsplot = function (model, X.labels = NULL, linesize = 1.5, pointsize = 3, 
+    palette = "Greys", single.colour = "black") 
+{
+    dat <- gg_coefsplot_data(model)
+    if (is.null(X.labels)) {
+        labeller = "label_value"
+    }
+    else {
+        if (length(X.labels) != model$num.X) 
+            stop("Expected ", model$num.X, " X variable labels")
+        varnames <- sort(unique(dat$var))
+        if (!is.null(names(X.labels))) {
+            ii <- pmatch(names(X.labels), varnames)
+            if (anyNA(ii)) 
+                stop("Not all label vector names match X variable names")
+            facet.labels <- X.labels
+            names(facet.labels) <- varnames[ii]
+        }
+        else {
+            facet.labels <- X.labels
+            names(facet.labels) <- varnames
+        }
+        labeller <- as_labeller(facet.labels)
+    }
+    dat <- mutate(dat, linecolour = 0.2 + 0.8 * nonzeroness(lower95, 
+        upper95))
+    gg <- ggplot(data = dat, aes(y = revlabel)) + geom_segment(aes(yend = revlabel, 
+        x = lower95, xend = upper95, colour = linecolour), size = linesize, 
+        show.legend = FALSE) + geom_point(aes(x = median, colour = linecolour), 
+        size = pointsize, show.legend = FALSE)
+    if (is.null(palette) || palette == "") {
+        if (is.null(single.colour) || single.colour == "") {
+            single.colour <- "black"
+        }
+        gg <- gg + scale_colour_gradient(low = single.colour, 
+            high = single.colour)
+    }
+    else {
+        gg <- gg + scale_color_distiller(palette = palette, direction = 1)
+    }
+    gg + geom_vline(xintercept = 0, linetype = "dashed") + labs(x = "", 
+        y = "") + facet_wrap(~var, scales = "free_x", labeller = labeller, nrow = 5)
+}
+
+#
+my_lvsplot = function (model, scaling = 1, lvs = c(1, 2), include = c("both", 
+    "objects", "attributes"), group = NULL) 
+{
+    if (length(lvs) != 2 | get_num_lvs(model) < 2) 
+        stop("Presently this function only works for two latent variables")
+    include <- match.arg(include)
+    lv.names <- paste0("lv", lvs)
+    dat <- gg_lvsplot_data(model, scaling)
+    dat <- dat[, c(lv.names, "var", "label")]
+    if (include == "both") {
+        ggplot(data = dat, aes_string(x = lv.names[1], y = lv.names[2])) + 
+            geom_point(aes(colour = var), show.legend = FALSE) + 
+            geom_text_repel(aes(colour = var, label = label), 
+                show.legend = FALSE)
+    }
+    else {
+        var <- ifelse(include == "objects", "lv", "lvcoef")
+        ggplot(data = dat[dat$var == var, ], aes_string(x = lv.names[1], 
+            y = lv.names[2])) + geom_point() + geom_text_repel(aes(label = label))
+    }
+}
+```
+```{r load data, echo=FALSE}
+# Load data sets
+immune <- read_xlsx("Immune_Expression_Data.xlsx", sheet = "R") # Immune Expression gene
+Yr <- read_xlsx("Yersinia_qPCR_data.xlsx", sheet = "R") # Yersinia Expression gene
+Yr[is.na(Yr)] <- 0 # Change NAs to 0
+#
+ASV_all <- t(read.csv("ASV_table_glom.csv", row.names = 1)) # ASVs abundances
+ASV_all <- t(make_relative(ASV_all)) # Making relative abundances
+tax_all <- read.csv("tax_table_glom.csv", row.names = 1) # ASV classfication
+biomarkers <- read_excel("biomarkers_table.xlsx", sheet = "Biomarkers_for_R") # biomarker names for selection
+#
+md <- read.csv("Immune_gene_microbe_sample_info.csv") # Sample information
+md <- md[md$Gut.Section == "Distal Gut content",]
+```
+
+```{r CTRL}
+md.CTRL <- md[md$Feed == "CTRL",]
+immune.CTRL <- immune[match(md.CTRL$Sample, immune$Sample),]
+
+
+biomarkers.CTRL <- biomarkers[biomarkers$Feed =="CTRL",]
+
+ASV_all.CTRL <- ASV_all[,match(md.CTRL$Sample, colnames(ASV_all))] # Select CTRL samples
+biomarker_ASVs <- unique(biomarkers.CTRL$biomarker)
+biomarker_ASVs <- tax_all[match(biomarker_ASVs, tax_all$Genus),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all.CTRL[match(rownames(biomarker_ASVs), rownames(ASV_all.CTRL)),]
+# remove redundant samples
+rownames(biomarker_ASVs) <- names
+###
+
+ty = t(biomarker_ASVs)
+tx = log2(immune.CTRL[,2:25])
+tx[is.na(tx)] <- 0 # Change NAs to 0
+tx$Infection <- c(rep(0, 40),rep(1, 40))
+
+ty <- as.data.frame(ty)
+tx <- as.data.frame(tx)
+rownames(tx) <- rownames(ty)
+ 
+testpath <- file.path(tempdir(), "jagsboralmodel.txt")
+
+mcmc.control. <- list(n.burnin = 20, 
+                    n.iteration = 400, 
+                    n.thin = 30, 
+                    seed = 1)
+
+fit_traits <- boral(ty, X = tx, family = "tweedie",
+mcmc.control = mcmc.control., model.name = testpath,
+lv.control = list(num.lv = 2, type = "independent", distmat = NULL), save.model = TRUE)
+#
+summary.boral(fit_traits)
+plot(fit_traits)
+
+gg_lvsplot(fit_traits, include = "both") + scale_color_brewer(palette = "Dark2")
+```
+
+```{r CTRL plot}
+#pdf("Bayesian_CTRL_tweedie_distibrution.pdf", height = 8, width = 24)
+plot_grid(gg_coefsplot(fit_traits, palette = "Greens"),gg_varpart(fit_traits, as.percent = TRUE, label.means = FALSE))
+#dev.off()
+```
+
+```{r PRO}
+## Generate data for PRO
+biomarkers.PRO <- biomarkers[biomarkers$Feed =="PRO",]
+md.PRO <- md[md$Feed == "PRO",]
+ASV_all.PRO <- ASV_all[,match(md.PRO$Sample, colnames(ASV_all))]
+biomarker_ASVs <- unique(biomarkers.PRO$biomarker)
+biomarker_ASVs <- tax_all[match(biomarker_ASVs, tax_all$Genus),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all.PRO[match(rownames(biomarker_ASVs), rownames(ASV_all.PRO)),]
+rownames(biomarker_ASVs) <- names
+
+immune.PRO <- immune[match(md.PRO$Sample, immune$Sample),]
+###
+
+ty = t(biomarker_ASVs)
+tx = immune.PRO[,2:25]
+tx[is.na(tx)] <- 0
+
+ty <- as.data.frame(ty)
+tx <- as.data.frame(tx)
+rownames(tx) <- rownames(ty)
+
+#
+testpath <- file.path(tempdir(), "jagsboralmodel.txt")
+mcmc.control. <- list(n.burnin = 2000, 
+                    n.iteration = 10000, 
+                    n.thin = 30, 
+                    seed = NULL)
+
+#example_mcmc_control <- list(n.burnin = 10, n.iteration = 100,n.thin = 1)
+
+fit_traits <- boral(ty, X = tx, family = "tweedie",
+mcmc.control = mcmc.control., model.name = testpath,
+lv.control = list(num.lv = 2, type = "independent", distmat = NULL), save.model = TRUE)
+
+#
+summary(fit_traits)
+plot(fit_traits)
+#
+gg_lvsplot(fit_traits, include = "both") + scale_color_brewer(palette = "Dark2")
+
+```
+```{r PRO plot}
+#pdf("Bayesian_coefficients_PRO.pdf", height = 8, width = 24)
+plot_grid(gg_coefsplot(fit_traits, palette = "Greens"),gg_varpart(fit_traits, as.percent = TRUE, label.means = FALSE))
+#dev.off()
+```
+
+```{r both}
+ASV_all <- ASV_all[,match(md$Sample, colnames(ASV_all))]
+biomarker_ASVs <- tax_all[match(unique(biomarkers$biomarker), tax_all$Genus),]
+biomarker_ASVs <- biomarker_ASVs[-c(5),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all[match(unique(rownames(biomarker_ASVs)), rownames(ASV_all)),]
+rownames(biomarker_ASVs) <- names
+
+immune_sub <- immune %>%
+  select("C3","Cathelicidin 1","Cathelicidin 2","IFN g","IgM","IgT","IL-1b", "IL6", "IL-10","Lysozyme","SAA","TNFa")
+
+#ty = log(t(biomarker_ASVs+1)) #log transformation
+ty = t(biomarker_ASVs)
+ty.log = log(ty)
+ty.sqrt <- sqrt(ty)
+ty.log[which(!is.finite(ty.log))] <- 1
+{hist(ty)
+hist(ty.log)
+hist(ty.sqrt)}
+#
+tx = immune_sub
+tx[is.na(tx)] <- 0
+tx$Infection <- c(rep(0, 40),rep(1, 40),rep(0, 40),rep(1, 40))
+tx$Feed <- c(rep(0, 80),rep(1, 80))
+tx$Yr <- Yr$Expression
+
+
+ty <- as.data.frame(ty)
+ty.log <- as.data.frame(ty.log)
+ty.sqrt <- as.data.frame(ty.sqrt)
+tx <- as.data.frame(tx)
+rownames(tx) <- rownames(ty)
+ 
+testpath <- file.path(tempdir(), "jagsboralmodel.txt")
+
+mcmc.control. <- list(n.burnin = 20, 
+                    n.iteration = 400, 
+                    n.thin = 30, 
+                    seed = 1)
+
+fit_traits <- boral(ty, X = tx, family = "normal",
+mcmc.control = mcmc.control., model.name = testpath,
+lv.control = list(num.lv = 2, type = "independent", distmat = NULL), save.model = TRUE)
+#
+summary.boral(fit_traits)
+plot(fit_traits)
+
+```
+
+```{r}
+#pdf("Bayesian_lv_plot.pdf", height = 12, width = 16)
+gg_lvsplot(fit_traits, include = "both") + scale_color_brewer(palette = "Dark2") + theme_minimal()
+#dev.off()
+
+#pdf("Bayesian_coefficients_both.pdf", height = 8, width = 24)
+plot_grid(coefsplot(fit_traits, palette = "Greens"),gg_varpart(fit_traits, as.percent = TRUE, label.means = FALSE))
+#dev.off()
+```

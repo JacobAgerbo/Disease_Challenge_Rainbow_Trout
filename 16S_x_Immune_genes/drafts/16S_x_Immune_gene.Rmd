@@ -1,0 +1,405 @@
+---
+title: "16S_X_Immune_gene"
+author: "Jacob Agerbo Rasmussen"
+date: "5/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load dependecies, warning=FALSE, tidy=TRUE, message=FALSE}
+library(ggplot2);packageVersion("ggplot2")
+library(RColorBrewer);packageVersion("RColorBrewer")
+library(ggpubr);packageVersion("ggpubr")
+library(rstatix);packageVersion("rstatix")
+library(cowplot);packageVersion("cowplot")
+library(reshape2);packageVersion("reshape2")
+library(knitr);packageVersion("knitr")
+library(MASS);packageVersion("MASS")
+library(caret);packageVersion("caret")
+library(wesanderson);packageVersion("wesanderson")
+library(psych);packageVersion("psych")
+library(corrplot);packageVersion("corrplot")
+library(readxl);packageVersion("readxl")
+library(WGCNA)
+library(ComplexHeatmap)
+library(cluster)
+library(igraph)
+library(phyloseq)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r load data, echo=FALSE}
+ASVs <- read.csv("Immune_gene_microbe_asv_table.csv", row.names = 1)
+tax <- read.csv("Immune_gene_microbe_tax_table.csv", row.names = 1)
+md <- read.csv("Immune_gene_microbe_sample_info.csv")
+PC <- read.csv("Immune_gene_microbe_PCoA_Clustering.csv")
+rownames(md) <- md$Sample_ID
+#immune <- read_xlsx("Immune_Expression_Data.xlsx", sheet = "R")
+immune <- read_xlsx("Delta -Cq_ qPCR.xlsx")
+rownames(immune) <- immune$Sample
+#
+## Remove mid gut samples from ASV and MD
+md <- md[md$Gut.Section == "Distal Gut content",]
+ASVs <- ASVs[,match(md$Sample, colnames(ASVs))]
+```
+
+```{r corelation CTRL, warning=FALSE, tidy=TRUE, message=FALSE}
+## CTRL
+immune <- read_xlsx("Immune_Expression_Data.xlsx", sheet = "R")
+md.CTRL <- md[md$Feed == "CTRL",]
+ASVs.CTRL <- ASVs[,match(md.CTRL$Sample, colnames(ASVs))]
+immune.CTRL <- immune[match(md.CTRL$Sample, immune$Sample),]
+###
+#corr.data <- log10(immune.CTRL[,2:25]) # if using immune expression data, use this.
+corr.data <- -immune.CTRL[,2:25] # if using -Cq
+``` 
+
+```{r Pearson correlation of metabolite intensity and mycoplasma and weight, warning=FALSE, tidy=TRUE, message=FALSE}
+library(data.table)
+data <- cbind(corr.data,md.CTRL)
+toi <- tax[tax$Genus == "Mycoplasma",]
+data$Mycoplasma <- t(ASVs.CTRL[rownames(toi),])
+stat_list = list()
+for (i in 1:length(colnames(data[,2:24]))){
+selid <- colnames(data)[i]
+lm_data <- data[,c(selid,"Mycoplasma","Infection.Stage")]
+lm_stat.test_NI <- lm_data[lm_data$Infection.Stage == "Not.Infected",]
+lm_stat.test_I <- lm_data[lm_data$Infection.Stage == "Infected",]
+NI <- cor.test(as.numeric(lm_stat.test_NI$Mycoplasma), lm_stat.test_NI[,selid], 
+                    method = "spearman")
+NI.p.value <- NI$p.value
+NI.cor <- NI$estimate
+I <- cor.test(as.numeric(lm_stat.test_I$Mycoplasma), lm_stat.test_I[,selid], 
+                    method = "spearman")
+I.p.value <- I$p.value
+I.cor <- I$estimate
+
+stat <- cbind(selid,NI.p.value,NI.cor,I.p.value,I.cor)
+stat_list[[i]] = stat
+}
+stat_list  <-  as.data.frame(matrix(unlist(stat_list), nrow=length(unlist(stat_list[1]))))
+stat_list.Mycoplasma <- t(stat_list)
+colnames(stat_list.Mycoplasma) <- c("ID","Not.infected.p.value.Mycoplasma","Not.infected.cor.Mycoplasma","Infected.p.value.Mycoplasma","Infected.cor.Mycoplasma")
+
+```
+
+```{r correlate with mycoplasm and immunee gene expression for each group, warning=FALSE, tidy=TRUE, message=FALSE}
+#r Create scatterplots with correlations within each group, include=FALSE
+group_pal = c("#ADDAB9","#3B5D9C")
+plot_list_myco = list()
+# Scatter plot colored by groups
+
+# Scatter plot colored by groups
+for (i in 1:length(colnames(data[2:24]))){
+selid <- colnames(data)[i]
+title  <- colnames(data)[i]
+sp <- ggscatter(data, x = selid, y = "Mycoplasma",
+                xlab = paste("Expression of ",selid," (-DCq)"),
+                size = 2.5, alpha = 0.5, add = "reg.line", conf.int = TRUE) +
+  border() +
+  stat_cor(method = "spearman")
+sp
+#
+xplot <- ggdensity(data, selid, fill = "Infection.Stage",
+                   palette = group_pal)
+#
+yplot <- ggdensity(data, "Mycoplasma", fill = "Infection.Stage", 
+                   palette = group_pal) + coord_flip()
+  
+# Cleaning the plots
+sp <- sp +  theme(legend.position="bottom")
+yplot <- yplot + clean_theme() + rremove("legend")
+xplot <- xplot + clean_theme() + rremove("legend")
+# Arranging the plot using cowplot
+p = plot_grid(xplot, NULL, sp, yplot, ncol = 2, align = "hv", 
+          rel_widths = c(2, 1), rel_heights = c(1, 2))
+plot_list_myco[[i]] = p
+}
+```
+
+```{r - plot scatter plots, warning=FALSE, tidy=TRUE, message=FALSE}
+# Remove hashtag below to write out output
+#pdf("Mycoplasma_Immune_genes_convertedCQ.pdf")
+plot_list_myco[1:8]
+#dev.off()
+```
+
+```{r}
+#column based normalisation prior comparison
+hm.ft <- t(-immune.CTRL[,2:25])
+hm.md <- md.CTRL
+hm.tax <- t(ASVs.CTRL)
+colnames(hm.tax) <- tax$Genus
+hm.md <- cbind(hm.md,hm.tax)
+
+hm.ft <- as.data.frame(hm.ft)
+# Select only significant different metabolites
+
+# Make mean and SD for visualising heatmap
+scaled.dat <- scale(t(hm.ft))
+scaled.dat <- t(scaled.dat)
+hm.ft <- scaled.dat
+# configure data to log10, add 1 to remove zero intensity, which will conflict log10
+
+# Get annotation for heatmap
+
+### Plotting
+#Clustering of PAMs
+set.seed(1)
+#pa_r = pam(hm.ft, k = 3)
+pa_c = pam(t(hm.ft), k = 2)
+
+# Define some graphics to display the distribution of columns
+.density = anno_density(hm.ft, type = "line", gp = gpar(col = "black", fill = "thistle" ))
+col = list(Infection.Stage = c("Not.Infected" = "#3B5D9C", "Infected" = "#ADDAB9"), 
+           PAM = c("1" = "#3889A0","2" = "#F2AD00","3" = "#f5452a","4" = "#D95F02", "5" = "#1B9E77" ,"6" = "#046C9A" ,"7" = "#0B775E" ,"8" = "#35274A" ,"9" = "#F2300F" ,"10" = "#666666"),
+           Mycoplasma = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           Massilia = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           Pseudomonas = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           endosymbiont8 = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")))
+# Annotate side graphs in heatmap
+ha <- HeatmapAnnotation(
+  Infection.Stage = hm.md$Infection.Stage, 
+  Mycoplasma = hm.md$Mycoplasma,
+  Massilia = hm.md$Massilia,
+  Pseudomonas = hm.md$Pseudomonas,
+  endosymbiont8 = hm.md$endosymbionts8,
+  #density = .density,height = unit(10, "cm"),
+  col = col
+)
+ha_mix_right = HeatmapAnnotation(PAM = pa_r$clustering, which = "row", width = unit(1.5, "cm"),
+                                 col = col)
+```
+```{r plot heatmap CTRL}
+#pdf("Immune_gene_X_16S_heatmap_CTRL_V2.pdf", width = 15, height = 10)
+Heatmap(hm.ft, name = paste("Gene Expression","SD of Intensity", sep = "\n"), col <- c("#082ca3","#f6ffed","#ad1515"),
+        top_annotation = ha,
+        #split = paste0("pam", pa_r$clustering),
+        column_split = paste0("", pa_c$clustering), 
+        #row_labels = ifelse(hm.Annotation$CF_class != "no matches", hm.Annotation$CF_class, ""),
+        #column_labels = hm.md$Sample,
+        row_dend_side = "right",
+        row_names_side = c("left"), cluster_rows = FALSE,
+        width = 1) #+ ha_mix_right
+
+#dev.off()
+```
+
+### PRO
+```{r}
+#column based normalisation prior comparison
+md.PRO <- md[md$Feed == "PRO",]
+
+biomarkers <- read_excel("biomarkers_table.xlsx", sheet = "Biomarkers_for_R")
+biomarkers.PRO <- biomarkers[biomarkers$Feed =="PRO",]
+ASV_all <- read.csv("ASV_table_glom.csv", row.names = 1)
+c.names <- colnames(ASV_all)
+r.names <- rownames(ASV_all)
+ASV_all <- lapply(ASV_all, function(x) x/sum(x))
+ASV_all  <-  as.data.frame(matrix(unlist(ASV_all), nrow=length(unlist(ASV_all[1]))))
+names(ASV_all) <- c.names
+rownames(ASV_all) <- r.names
+
+ASV_all.PRO <- ASV_all[,match(md.PRO$Sample, colnames(ASV_all))]
+tax_all <- read.csv("tax_table_glom.csv", row.names = 1)
+
+biomarker_ASVs <- unique(biomarkers.PRO$biomarker)
+biomarker_ASVs <- tax_all[match(biomarker_ASVs, tax_all$Genus),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all.PRO[match(rownames(biomarker_ASVs), rownames(ASV_all.PRO)),]
+# remove redundant samples
+rownames(biomarker_ASVs) <- names
+###
+
+immune.PRO <- immune[match(md.PRO$Sample, immune$Sample),]
+###
+#corr.data <- log10(immune.CTRL[,2:25]) # if using immune expression data, use this.
+
+hm.ft <- t(-immune.PRO[,2:25])
+hm.md <- md.PRO
+hm.tax <- t(biomarker_ASVs)
+
+hm.md <- cbind(hm.md,hm.tax)
+
+hm.ft <- as.data.frame(hm.ft)
+# Select only significant different metabolites
+
+# Make mean and SD for visualising heatmap
+scaled.dat <- scale(t(hm.ft))
+scaled.dat <- t(scaled.dat)
+hm.ft <- scaled.dat
+# configure data to log10, add 1 to remove zero intensity, which will conflict log10
+
+# Get annotation for heatmap
+
+### Plotting
+#Clustering of PAMs
+set.seed(1)
+#pa_r = pam(hm.ft, k = 24)
+pa_c = pam(t(hm.ft), k = 2)
+
+# Define some graphics to display the distribution of columns
+.density = anno_density(hm.ft, type = "line", gp = gpar(col = "black", fill = "thistle" ))
+col = list(Infection.Stage = c("Not.Infected" = "#3B5D9C", "Infected" = "#ADDAB9"), 
+           PAM = c("1" = "#3889A0","2" = "#F2AD00","3" = "#f5452a","4" = "#D95F02", "5" = "#1B9E77" ,"6" = "#046C9A" ,"7" = "#0B775E" ,"8" = "#35274A" ,"9" = "#F2300F" ,"10" = "#666666"),
+          Ralstonia = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           endosymbionts8 = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           Peptostreptococcus = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")),
+           Bacteroides = circlize::colorRamp2(c(0, 0.2,1), c("white","#1B9E77","#ad1515")))
+           
+# Annotate side graphs in heatmap
+ha <- HeatmapAnnotation(
+  Infection.Stage = hm.md$Infection.Stage,
+  Ralstonia = hm.md$Ralstonia,
+  endosymbionts8 = hm.md$endosymbionts8,
+  Peptostreptococcus = hm.md$Peptostreptococcus,
+  Bacteroides = hm.md$Bacteroides,
+  #density = .density,height = unit(10, "cm"),
+  col = col
+)
+#ha_mix_right = HeatmapAnnotation(PAM = pa_r$clustering, which = "row", width = unit(1.5, "cm"),col = col)
+```
+```{r plot heatmap PRO}
+#pdf("Immune_gene_X_16S_heatmap_PRO_V2.pdf", width = 15, height = 10)
+Heatmap(hm.ft, name = paste("Gene Expression","SD of Intensity", sep = "\n"), col <- c("#082ca3","#f6ffed","#ad1515"),
+        top_annotation = ha,
+        #split = paste0("pam", pa_r$clustering),
+        column_split = paste0("", pa_c$clustering), 
+        #row_labels = ifelse(hm.Annotation$CF_class != "no matches", hm.Annotation$CF_class, ""),
+        #column_labels = hm.md$Sample,
+        row_dend_side = "right",
+        row_names_side = c("left"), cluster_rows = FALSE,
+        width = 1) #+ ha_mix_right
+
+#dev.off()
+```
+########################################################################
+########################################################################
+#####            ####    ###   ####       ##     ##               ######
+####             #  ##  ## ##  #  ##     #  #    ##                #####                        
+##               ####   #   #  ###       ####    ##                   ##
+####             #  ##  ## ##  #  ##    ##  ##   ##                 ####
+#####            ####    ###   #   ##  ##    ##  #######          ######
+###################                                 ####################
+########################################################################
+```{r}
+library(boral)
+library(ggboral)
+library(mvabund)
+immune <- read_xlsx("Immune_Expression_Data.xlsx", sheet = "R")
+ASVs <- read.csv("Immune_gene_microbe_asv_table.csv", row.names = 1)
+tax <- read.csv("Immune_gene_microbe_tax_table.csv", row.names = 1)
+md <- read.csv("Immune_gene_microbe_sample_info.csv")
+md <- md[md$Gut.Section == "Distal Gut content",]
+ASVs <- ASVs[,match(md$Sample, colnames(ASVs))]
+md.CTRL <- md[md$Feed == "CTRL",]
+ASVs.CTRL <- ASVs[,match(md.CTRL$Sample, names(ASVs))]
+immune.CTRL <- immune[match(md.CTRL$Sample, immune$Sample),]
+biomarkers <- read_excel("biomarkers_table.xlsx", sheet = "Biomarkers_for_R")
+biomarkers.CTRL <- biomarkers[biomarkers$Feed =="CTRL",]
+ASV_all <- read.csv("ASV_table_glom.csv", row.names = 1)
+ASV_all.CTRL <- ASV_all[,match(md.CTRL$Sample, colnames(ASV_all))]
+tax_all <- read.csv("tax_table_glom.csv", row.names = 1)
+
+biomarker_ASVs <- unique(biomarkers.CTRL$biomarker)
+biomarker_ASVs <- tax_all[match(biomarker_ASVs, tax_all$Genus),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all.CTRL[match(rownames(biomarker_ASVs), rownames(ASV_all.CTRL)),]
+# remove redundant samples
+rownames(biomarker_ASVs) <- names
+###
+
+ty = t(biomarker_ASVs)
+tx = immune.CTRL[,2:25]
+tx[is.na(tx)] <- 0
+
+ty <- as.data.frame(ty)
+tx <- as.data.frame(tx)
+rownames(tx) <- rownames(ty)
+
+#
+testpath <- file.path(tempdir(), "jagsboralmodel.txt")
+mcmc.control. <- list(n.burnin = 50, 
+                    n.iteration = 1000, 
+                    n.thin = 30, 
+                    seed = 123)
+
+#example_mcmc_control <- list(n.burnin = 10, n.iteration = 100,n.thin = 1)
+
+fit_traits <- boral(ty, X = tx, family = "tweedie",
+mcmc.control = mcmc.control., model.name = testpath,
+lv.control = list(num.lv = 2, type = "independent", distmat = NULL), save.model = TRUE)
+#
+summary.boral(fit_traits)
+plot(fit_traits)
+
+gg_lvsplot(fit_traits, include = "both") + scale_color_brewer(palette = "Dark2")
+```
+
+```{r}
+#pdf("Bayesian_CTRL_tweedie_distibrution.pdf", height = 8, width = 24)
+plot_grid(gg_coefsplot(fit_traits, palette = "Greens"),gg_varpart(fit_traits, as.percent = TRUE, label.means = FALSE))
+#dev.off()
+```
+
+```{r}
+library(boral)
+library(ggboral)
+library(mvabund)
+biomarkers <- read_excel("biomarkers_table.xlsx", sheet = "Biomarkers_for_R")
+biomarkers.PRO <- biomarkers[biomarkers$Feed =="PRO",]
+ASV_all <- read.csv("ASV_table_glom.csv", row.names = 1)
+ASV_all.PRO <- ASV_all[,match(md.PRO$Sample, colnames(ASV_all))]
+tax_all <- read.csv("tax_table_glom.csv", row.names = 1)
+
+biomarker_ASVs <- unique(biomarkers.PRO$biomarker)
+biomarker_ASVs <- tax_all[match(biomarker_ASVs, tax_all$Genus),]
+names <- biomarker_ASVs$Genus
+biomarker_ASVs <- ASV_all.PRO[match(rownames(biomarker_ASVs), rownames(ASV_all.PRO)),]
+# remove redundant samples
+rownames(biomarker_ASVs) <- names
+###
+
+ty = t(biomarker_ASVs)
+tx = -immune.PRO[,2:25]
+tx[is.na(tx)] <- 0
+
+ty <- as.data.frame(ty)
+tx <- as.data.frame(tx)
+rownames(tx) <- rownames(ty)
+
+#
+testpath <- file.path(tempdir(), "jagsboralmodel.txt")
+mcmc.control. <- list(n.burnin = 10, 
+                    n.iteration = 400, 
+                    n.thin = 30, 
+                    seed = 123)
+
+example_mcmc_control <- list(n.burnin = 10, n.iteration = 100,
+n.thin = 1)
+
+## scale immune gene
+X <- scale(tx)
+
+fit_traits <- boral(ty, X = tx, family = "negative.binomial",
+mcmc.control = mcmc.control., model.name = testpath,
+lv.control = list(num.lv = 2, type = "independent", distmat = NULL), save.model = TRUE)
+
+#
+summary(fit_traits)
+plot(fit_traits)
+#
+gg_lvsplot(fit_traits, include = "both") + scale_color_brewer(palette = "Dark2")
+
+```
+```{r}
+#pdf("Bayesian_coefficients_PRO.pdf", height = 8, width = 24)
+plot_grid(gg_coefsplot(fit_traits, palette = "Greens"),gg_varpart(fit_traits, as.percent = TRUE, label.means = FALSE))
+#dev.off()
+```
