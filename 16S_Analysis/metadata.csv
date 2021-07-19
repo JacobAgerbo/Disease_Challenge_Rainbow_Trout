@@ -1,0 +1,532 @@
+﻿Sample_ID,Sample_Type,Feed_Code,Feeding_Type,Gut_Type,Infected
+BT01_F01_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F01_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F02_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F02_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F03_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F03_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F04_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F04_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F05_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F05_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F06_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F06_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F07_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F08_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F08_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F09_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F09_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F10_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F10_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F11_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F11_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F12_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F12_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F13_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F13_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F14_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F14_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F15_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F15_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F16_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F16_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F17_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F17_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F18_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F18_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F19_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F19_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F20_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F20_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F21_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F21_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F22_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F22_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F23_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F23_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F24_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F24_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F25_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F25_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F26_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F26_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F27_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F27_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F28_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F28_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F29_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F29_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F30_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F30_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F31_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F31_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F32_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F32_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F33_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F33_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F34_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F34_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F35_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F35_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F36_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F36_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F37_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F37_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F38_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F38_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F39_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F39_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT01_F40_S3,Sample,Beta,SYN,Distal Gut content,Not.Infected
+BT01_F40_S4,Sample,Beta,SYN,Mid Gut content,Not.Infected
+BT02_F01_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F01_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F02_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F02_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F03_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F03_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F04_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F04_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F05_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F05_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F06_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F06_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F07_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F07_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F08_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F08_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F09_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F09_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT02_F10_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT02_F10_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F01_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F01_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F02_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F02_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F03_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F03_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F04_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F04_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F05_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F05_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F06_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F06_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F07_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F07_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F08_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F08_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F09_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F09_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT03_F10_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT03_F10_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F01_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F01_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F02_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F02_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F03_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F03_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F04_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F04_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F05_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F05_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F06_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F06_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F07_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F07_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F08_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F08_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F09_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F09_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT04_F10_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT04_F10_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F01_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F01_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F02_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F02_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F03_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F03_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F04_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F04_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F05_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F05_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F06_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F06_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F07_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F07_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F08_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F08_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F09_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F09_S4,Sample,Beta,SYN,Mid Gut content,Infected
+BT05_F10_S3,Sample,Beta,SYN,Distal Gut content,Infected
+BT05_F10_S4,Sample,Beta,SYN,Mid Gut content,Infected
+Ctrl_Feed_1,Feed,NA,NA,NA,NA
+Ctrl_Feed_2,Feed,NA,NA,NA,NA
+Ctrl_Feed_3,Feed,NA,NA,NA,NA
+ET01_F01_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F01_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F02_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F02_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F03_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F03_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F04_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F04_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F05_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F05_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F06_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F06_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F07_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F07_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F08_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F08_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F09_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F09_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F10_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F10_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F11_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F11_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F12_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F12_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F13_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F13_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F14_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F14_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F15_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F15_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F16_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F16_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F17_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F17_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F18_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F18_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F19_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F19_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F20_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F20_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F21_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F21_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F22_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F22_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F23_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F23_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F24_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F24_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F25_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F25_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F26_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F26_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F27_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F27_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F28_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F28_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F29_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F29_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F30_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F30_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F31_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F31_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F32_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F32_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F33_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F33_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F34_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F34_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F35_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F35_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F36_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F36_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F37_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F37_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F38_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F38_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F39_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F39_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET01_F40_S3,Sample,Epsilon,CTRL,Distal Gut content,Not.Infected
+ET01_F40_S4,Sample,Epsilon,CTRL,Mid Gut content,Not.Infected
+ET02_F01_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F01_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F02_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F02_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F03_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F03_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F04_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F04_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F05_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F05_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F06_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F06_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F07_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F07_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F08_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F08_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F09_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F09_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET02_F10_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET02_F10_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F01_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F01_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F02_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F02_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F03_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F03_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F04_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F04_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F05_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F05_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F06_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F06_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F07_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F07_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F08_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F08_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F09_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F09_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET03_F10_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET03_F10_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F01_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F01_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F02_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F02_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F03_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F03_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F04_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F04_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F05_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F05_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F06_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F06_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F07_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F07_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F08_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F08_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F09_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F09_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET04_F10_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET04_F10_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F01_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F01_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F02_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F02_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F03_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F03_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F04_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F04_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F05_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F05_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F06_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F06_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F07_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F07_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F08_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F08_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F09_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F09_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+ET05_F10_S3,Sample,Epsilon,CTRL,Distal Gut content,Infected
+ET05_F10_S4,Sample,Epsilon,CTRL,Mid Gut content,Infected
+Ext_Neg_1,Blank,NA,NA,NA,NA
+Ext_Neg_10,Blank,NA,NA,NA,NA
+Ext_Neg_2,Blank,NA,NA,NA,NA
+Ext_Neg_3,Blank,NA,NA,NA,NA
+Ext_Neg_4,Blank,NA,NA,NA,NA
+Ext_Neg_5,Blank,NA,NA,NA,NA
+Ext_Neg_6,Blank,NA,NA,NA,NA
+Ext_Neg_7,Blank,NA,NA,NA,NA
+Ext_Neg_8,Blank,NA,NA,NA,NA
+Ext_Neg_9,Blank,NA,NA,NA,NA
+Ext_Neg_11,Blank,NA,NA,NA,NA
+Ext_Neg_12,Blank,NA,NA,NA,NA
+Ext_Neg_13,Blank,NA,NA,NA,NA
+Ext_Neg_14,Blank,NA,NA,NA,NA
+Ext_Neg_15,Blank,NA,NA,NA,NA
+Ext_Neg_16,Blank,NA,NA,NA,NA
+Ext_Neg_17,Blank,NA,NA,NA,NA
+Ext_Neg_18,Blank,NA,NA,NA,NA
+Lib_Blk_1,Blank,NA,NA,NA,NA
+Lib_Blk_10,Blank,NA,NA,NA,NA
+Lib_Blk_2,Blank,NA,NA,NA,NA
+Lib_Blk_3,Blank,NA,NA,NA,NA
+Lib_Blk_4,Blank,NA,NA,NA,NA
+Lib_Blk_5,Blank,NA,NA,NA,NA
+Lib_Blk_6,Blank,NA,NA,NA,NA
+Lib_Blk_7,Blank,NA,NA,NA,NA
+Lib_Blk_8,Blank,NA,NA,NA,NA
+Lib_Blk_9,Blank,NA,NA,NA,NA
+PCR_Blk_1,Blank,NA,NA,NA,NA
+PCR_Blk_10,Blank,NA,NA,NA,NA
+PCR_Blk_2,Blank,NA,NA,NA,NA
+PCR_Blk_3,Blank,NA,NA,NA,NA
+PCR_Blk_4,Blank,NA,NA,NA,NA
+PCR_Blk_5,Blank,NA,NA,NA,NA
+PCR_Blk_6,Blank,NA,NA,NA,NA
+PCR_Blk_7,Blank,NA,NA,NA,NA
+PCR_Blk_8,Blank,NA,NA,NA,NA
+PCR_Blk_9,Blank,NA,NA,NA,NA
+Pro_Feed_1,Feed,NA,NA,NA,NA
+Pro_Feed_2,Feed,NA,NA,NA,NA
+Pro_Feed_3,Feed,NA,NA,NA,NA
+Syn_Feed_1,Feed,NA,NA,NA,NA
+Syn_Feed_2,Feed,NA,NA,NA,NA
+Syn_Feed_3,Feed,NA,NA,NA,NA
+Water_sample_1,Water,NA,NA,NA,NA
+Water_sample_2,Water,NA,NA,NA,NA
+Water_sample_3,Water,NA,NA,NA,NA
+Water_sample_4,Water,NA,NA,NA,NA
+Water_sample_5,Water,NA,NA,NA,NA
+ZT01_F01_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F01_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F02_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F02_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F03_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F03_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F04_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F04_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F05_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F05_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F06_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F06_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F07_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F07_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F08_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F08_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F09_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F09_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F10_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F10_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F11_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F11_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F12_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F12_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F13_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F13_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F14_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F14_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F15_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F15_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F16_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F16_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F17_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F17_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F18_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F18_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F19_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F19_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F20_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F20_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F21_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F21_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F22_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F22_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F23_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F23_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F24_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F24_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F25_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F25_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F26_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F26_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F27_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F27_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F28_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F28_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F29_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F29_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F30_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F30_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F31_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F31_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F32_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F32_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F33_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F33_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F34_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F34_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F35_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F35_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F36_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F36_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F37_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F37_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F38_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F38_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F39_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F39_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT01_F40_S3,Sample,Zeta,PRO,Distal Gut content,Not.Infected
+ZT01_F40_S4,Sample,Zeta,PRO,Mid Gut content,Not.Infected
+ZT02_F01_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F01_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F02_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F02_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F03_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F03_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F04_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F04_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F05_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F05_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F06_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F06_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F07_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F07_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F08_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F08_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F09_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F09_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT02_F10_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT02_F10_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F01_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F01_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F02_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F02_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F03_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F03_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F04_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F04_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F05_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F05_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F06_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F06_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F07_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F07_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F08_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F08_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F09_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F09_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT03_F10_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT03_F10_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F01_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F01_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F02_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F02_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F03_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F03_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F04_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F04_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F05_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F05_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F06_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F06_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F07_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F07_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F08_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F08_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F09_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F09_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT04_F10_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT04_F10_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F01_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F01_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F02_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F02_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F03_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F03_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F04_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F04_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F05_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F05_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F06_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F06_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F07_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F07_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F08_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F08_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F09_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F09_S4,Sample,Zeta,PRO,Mid Gut content,Infected
+ZT05_F10_S3,Sample,Zeta,PRO,Distal Gut content,Infected
+ZT05_F10_S4,Sample,Zeta,PRO,Mid Gut content,Infected

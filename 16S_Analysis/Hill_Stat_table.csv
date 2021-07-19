@@ -1,0 +1,7 @@
+"","""Infected""","term","group1","group2","null.value","estimate","conf.low","conf.high","p.adj","p.adj.signif"
+"CTRL Hill 0","Infected","Infected","Infected","Not.Infected",0,-3.53750000000001,-8.96873542550428,1.89373542550427,0.2,"ns"
+"CTRL Hill 1","Infected","Infected","Infected","Not.Infected",0,-5.18019198337092,-6.09883498959009,-4.26154897715175,2.42e-14,"****"
+"CTRL Hill 2","Infected","Infected","Infected","Not.Infected",0,-2.98372074471617,-3.52523254842069,-2.44220894101165,2.71e-14,"****"
+"PRO Hill 0","Infected","Infected","Infected","Not.Infected",0,1.675,-3.98474000900926,7.33474000900926,0.56,"ns"
+"PRO Hill 1","Infected","Infected","Infected","Not.Infected",0,1.675,-3.98474000900926,7.33474000900926,0.56,"ns"
+"PRO Hill 2","Infected","Infected","Infected","Not.Infected",0,1.675,-3.98474000900926,7.33474000900926,0.56,"ns"

@@ -1,0 +1,8 @@
+"","biomarker","importance","Type"
+"1","GLM endosymbionts8",3.22022111334408,"Generalised Linear Model"
+"2","GLM Mycoplasma",77.2235902978464,"Generalised Linear Model"
+"3","GLM Pseudomonas",100,"Generalised Linear Model"
+"4","RF endosymbionts8",36.7989740120729,"Random Forrest"
+"5","RF Massilia",81.4440713460214,"Random Forrest"
+"6","RF Mycoplasma",98.7529470723537,"Random Forrest"
+"7","RF Pseudomonas",100,"Random Forrest"
